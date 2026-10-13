@@ -1,0 +1,45 @@
+@page "/login"
+@layout LoginLayout
+
+<PageTitle>Iniciar sesión - Finanzas</PageTitle>
+
+<div class="card shadow border-0" style="background-color: rgba(255, 255, 255, 0.92);">
+    <div class="card-body p-4">
+        <img src="Logo.png" alt="Logo de Finanzas" class="d-block mx-auto mb-2" style="width: 120px; height: 120px; object-fit: contain;" />
+        <h1 class="h3 text-center mb-1">Finanzas</h1>
+        <p class="text-center text-muted mb-4">Inicia sesión para continuar</p>
+
+        <EditForm Model="modelo" OnValidSubmit="IniciarSesion">
+            <DataAnnotationsValidator />
+
+            <div class="mb-3">
+                <label for="correo" class="form-label">Correo</label>
+                <InputText id="correo" type="email" class="form-control" @bind-Value="modelo.Correo" autocomplete="username" disabled="@cargando" />
+                <ValidationMessage For="() => modelo.Correo" />
+            </div>
+
+            <div class="mb-3">
+                <label for="contra" class="form-label">Contraseña</label>
+                <InputText id="contra" type="password" class="form-control" @bind-Value="modelo.Contra" autocomplete="current-password" disabled="@cargando" />
+                <ValidationMessage For="() => modelo.Contra" />
+            </div>
+
+            @if (!string.IsNullOrEmpty(error))
+            {
+                <div class="alert alert-danger py-2" role="alert">@error</div>
+            }
+
+            <button type="submit" class="btn btn-primary w-100" disabled="@cargando">
+                @if (cargando)
+                {
+                    <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+                    <span>Entrando...</span>
+                }
+                else
+                {
+                    <span>Iniciar sesión</span>
+                }
+            </button>
+        </EditForm>
+    </div>
+</div>

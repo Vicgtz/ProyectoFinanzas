@@ -1,0 +1,168 @@
+@page "/cuentas"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@using Finanzas.Models.Cuenta
+
+<PageTitle>Cuentas - Finanzas</PageTitle>
+
+<div class="page-header">
+    <h1>Cuentas</h1>
+    <button class="btn btn-primary" @onclick="Nueva">+ Nueva cuenta</button>
+</div>
+
+@if (!string.IsNullOrEmpty(error))
+{
+    <div class="alert alert-danger d-flex justify-content-between align-items-center" role="alert">
+        <span>@error</span>
+        <button class="btn btn-sm btn-outline-danger" @onclick="Cargar">Reintentar</button>
+    </div>
+}
+
+<div class="row g-3 mb-3">
+    <div class="col-12 col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="resumen-etiqueta">Dinero disponible (efectivo y débito)</div>
+                <div class="resumen-valor text-success">@Moneda(TotalDisponible)</div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12 col-md-6">
+        <div class="card h-100">
+            <div class="card-body">
+                <div class="resumen-etiqueta">Deuda en tarjetas de crédito</div>
+                <div class="resumen-valor text-danger">@Moneda(TotalDeuda)</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="form-check form-switch mb-3">
+    <input class="form-check-input" type="checkbox" id="inactivas" @bind="mostrarInactivas" />
+    <label class="form-check-label" for="inactivas">Mostrar cuentas inactivas</label>
+</div>
+
+@if (cargando)
+{
+    <div class="text-center py-5">
+        <div class="spinner-border" role="status"><span class="visually-hidden">Cargando...</span></div>
+    </div>
+}
+else if (CuentasVisibles.Count == 0)
+{
+    <div class="text-center text-muted py-5">
+        No hay cuentas para mostrar.
+    </div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle bg-white table-cards">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Tipo</th>
+                    <th class="text-end">Saldo / Deuda</th>
+                    <th class="text-end">Disponible</th>
+                    <th class="text-center">Día de corte</th>
+                    <th>Estado</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var c in CuentasVisibles)
+                {
+                    <tr class="@(c.Activa ? null : "text-muted")">
+                        <td class="fw-semibold">@c.Nombre</td>
+                        <td data-label="Tipo">@NombreTipo(c.TipoCuenta)</td>
+                        <td class="text-end" data-label="@(EsCredito(c) ? "Deuda" : "Saldo")">@Moneda(c.Saldo)</td>
+                        @if (EsCredito(c))
+                        {
+                            <td class="text-end" data-label="Disponible">@Moneda((c.LimiteCredito ?? 0) - c.Saldo)</td>
+                            <td class="text-center" data-label="Día de corte">@(c.DiaCorte?.ToString() ?? "—")</td>
+                        }
+                        else
+                        {
+                            <td class="text-end d-none d-lg-table-cell">—</td>
+                            <td class="text-center d-none d-lg-table-cell">—</td>
+                        }
+                        <td data-label="Estado">
+                            <span class="badge @(c.Activa ? "bg-success" : "bg-secondary")">@(c.Activa ? "Activa" : "Inactiva")</span>
+                        </td>
+                        <td class="text-end text-nowrap acciones">
+                            <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => Editar(c)">Editar</button>
+                            <button class="btn btn-sm btn-outline-secondary" @onclick="() => CambiarEstado(c)">@(c.Activa ? "Desactivar" : "Activar")</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@if (modalAbierto)
+{
+    <div class="modal-backdrop fade show"></div>
+    <div class="modal fade show d-block" tabindex="-1" role="dialog" aria-modal="true">
+        <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
+            <div class="modal-content">
+                <EditForm Model="form" OnSubmit="Guardar">
+                    <div class="modal-header">
+                        <h5 class="modal-title">@(editando ? "Editar cuenta" : "Nueva cuenta")</h5>
+                        <button type="button" class="btn-close" aria-label="Cerrar" @onclick="CerrarModal" disabled="@guardando"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label" for="nombre">Nombre</label>
+                            <InputText id="nombre" class="form-control" @bind-Value="form.Nombre" maxlength="100" disabled="@guardando" />
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label" for="tipo">Tipo</label>
+                            <InputSelect id="tipo" class="form-select" @bind-Value="form.TipoCuenta" disabled="@(editando || guardando)">
+                                @foreach (var t in Tipos)
+                                {
+                                    <option value="@t.Clave">@t.Descripcion</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        @if (!editando)
+                        {
+                            <div class="mb-3">
+                                <label class="form-label" for="saldo">@(form.TipoCuenta == "C" ? "Deuda inicial" : "Saldo inicial")</label>
+                                <InputNumber id="saldo" class="form-control" @bind-Value="form.Saldo" disabled="@guardando" />
+                            </div>
+                        }
+
+                        @if (form.TipoCuenta == "C")
+                        {
+                            <div class="mb-3">
+                                <label class="form-label" for="limite">Límite de crédito</label>
+                                <InputNumber id="limite" class="form-control" @bind-Value="form.LimiteCredito" disabled="@guardando" />
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label" for="corte">Día de corte (1 a 31)</label>
+                                <InputNumber id="corte" class="form-control" @bind-Value="diaCorte" disabled="@guardando" />
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(errorForm))
+                        {
+                            <div class="alert alert-danger py-2 mb-0" role="alert">@errorForm</div>
+                        }
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" @onclick="CerrarModal" disabled="@guardando">Cancelar</button>
+                        <button type="submit" class="btn btn-primary" disabled="@guardando">
+                            @if (guardando)
+                            {
+                                <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+                            }
+                            Guardar
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}

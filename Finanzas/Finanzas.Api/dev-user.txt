@@ -1,0 +1,3 @@
+Usuario de prueba (solo desarrollo local)
+Correo: prueba@finanzas.local
+Contra: Dev-8d5cac6eaa

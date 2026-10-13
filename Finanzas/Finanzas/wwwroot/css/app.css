@@ -1,5 +1,28 @@
+:root {
+    --fz-verde-oscuro: #0f4c45;
+    --fz-verde: #1b7f6b;
+    --fz-verde-claro: #2fa37d;
+    --fz-verde-suave: #e3f3ee;
+    --fz-acento: #f4b63f;
+    --fz-fondo: #f3f8f6;
+    --fz-texto: #1f2d2a;
+    --fz-borde: #d9e6e1;
+    --bs-primary: #1b7f6b;
+    --bs-primary-rgb: 27, 127, 107;
+    --bs-link-color: #1b7f6b;
+    --bs-link-hover-color: #0f4c45;
+}
+
 html, body {
-    font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif;
+    font-family: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    color: var(--fz-texto);
+    background-color: var(--fz-fondo);
+}
+
+h1 {
+    font-size: 1.6rem;
+    font-weight: 600;
+    color: var(--fz-verde-oscuro);
 }
 
 h1:focus {
@@ -7,21 +30,261 @@ h1:focus {
 }
 
 a, .btn-link {
-    color: #0071c1;
+    color: var(--fz-verde);
+}
+
+.btn {
+    border-radius: 10px;
+    font-weight: 500;
+    min-height: 2.5rem;
+}
+
+.btn-sm {
+    min-height: 2rem;
 }
 
 .btn-primary {
     color: #fff;
-    background-color: #1b6ec2;
-    border-color: #1861ac;
+    background-color: var(--fz-verde);
+    border-color: var(--fz-verde);
 }
 
-.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-check-input:focus {
-  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem #258cfb;
+.btn-primary:hover, .btn-primary:focus, .btn-primary:active {
+    color: #fff;
+    background-color: var(--fz-verde-oscuro);
+    border-color: var(--fz-verde-oscuro);
+}
+
+.btn-primary:disabled {
+    background-color: var(--fz-verde);
+    border-color: var(--fz-verde);
+}
+
+.btn-outline-primary {
+    color: var(--fz-verde);
+    border-color: var(--fz-verde);
+}
+
+.btn-outline-primary:hover, .btn-outline-primary:active {
+    color: #fff;
+    background-color: var(--fz-verde);
+    border-color: var(--fz-verde);
+}
+
+.btn:focus, .btn:active:focus, .btn-link.nav-link:focus, .form-control:focus, .form-select:focus, .form-check-input:focus {
+  box-shadow: 0 0 0 0.1rem white, 0 0 0 0.25rem rgba(27, 127, 107, 0.45);
+  border-color: var(--fz-verde);
+}
+
+.form-check-input:checked {
+    background-color: var(--fz-verde);
+    border-color: var(--fz-verde);
+}
+
+.form-control, .form-select {
+    border-radius: 10px;
+    border-color: var(--fz-borde);
+    min-height: 2.75rem;
+}
+
+.form-label {
+    font-weight: 500;
+    font-size: 0.9rem;
+}
+
+.card {
+    border: 1px solid var(--fz-borde);
+    border-radius: 14px;
+    box-shadow: 0 2px 8px rgba(15, 76, 69, 0.06);
+}
+
+.badge {
+    font-weight: 500;
+    padding: 0.4em 0.7em;
+    border-radius: 999px;
+}
+
+.modal-content {
+    border: 0;
+    border-radius: 16px;
+}
+
+.alert {
+    border-radius: 10px;
+}
+
+.table {
+    --bs-table-hover-bg: var(--fz-verde-suave);
+}
+
+.table thead th {
+    background-color: var(--fz-verde-suave);
+    color: var(--fz-verde-oscuro);
+    font-size: 0.78rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    border-bottom: 0;
+    white-space: nowrap;
+}
+
+.table-responsive {
+    border: 1px solid var(--fz-borde);
+    border-radius: 14px;
+    overflow-x: auto;
+}
+
+.table-responsive > .table {
+    margin-bottom: 0;
 }
 
 .content {
     padding-top: 1.1rem;
+    padding-bottom: 2rem;
+}
+
+/* Encabezado de página: título a la izquierda y acción a la derecha */
+.page-header {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-between;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+}
+
+.page-header h1 {
+    margin-bottom: 0;
+}
+
+.filtros {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75rem 1rem;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.filtros .buscador {
+    flex: 0 1 280px;
+}
+
+/* Tarjeta de total / resumen */
+.resumen-etiqueta {
+    color: #5f726d;
+    font-size: 0.8rem;
+}
+
+.resumen-valor {
+    font-size: 1.5rem;
+    font-weight: 600;
+}
+
+/* Móvil: tablas como tarjetas, controles cómodos al tacto */
+@media (max-width: 575.98px) {
+    .page-header .btn {
+        width: 100%;
+    }
+
+    .filtros .buscador {
+        flex: 1 1 100%;
+    }
+
+    .filtros .btn-group {
+        width: 100%;
+    }
+
+    .filtros .btn-group .btn {
+        flex: 1;
+    }
+
+    .form-control, .form-select {
+        font-size: 16px; /* evita el zoom automático en iOS */
+    }
+
+    .btn {
+        min-height: 2.75rem;
+    }
+
+    .resumen-valor {
+        font-size: 1.3rem;
+    }
+
+}
+
+/* Tablas como tarjetas en móvil y tableta (con el menú lateral el espacio es corto) */
+@media (max-width: 991.98px) {
+    .table-responsive {
+        border: 0;
+        border-radius: 0;
+        overflow: visible;
+    }
+
+    .table-cards, .table-cards tbody {
+        display: block;
+        background: transparent !important;
+    }
+
+    .table-cards thead {
+        display: none;
+    }
+
+    .table-cards tr {
+        display: block;
+        background: #fff;
+        border: 1px solid var(--fz-borde);
+        border-radius: 14px;
+        box-shadow: 0 2px 8px rgba(15, 76, 69, 0.06);
+        padding: 0.5rem 0.9rem;
+        margin-bottom: 0.75rem;
+    }
+
+    .table-cards td {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.45rem 0;
+        border: 0;
+        text-align: right !important;
+        background: transparent;
+    }
+
+    .table-cards td[data-label]::before {
+        content: attr(data-label);
+        flex: 0 0 auto;
+        color: #5f726d;
+        font-size: 0.78rem;
+        font-weight: 500;
+        text-transform: uppercase;
+        letter-spacing: 0.03em;
+        text-align: left;
+    }
+
+    .table-cards td.acciones {
+        display: flex;
+        gap: 0.5rem;
+        padding-top: 0.75rem;
+        margin-top: 0.4rem;
+        border-top: 1px solid var(--fz-borde);
+    }
+
+    .table-cards td.acciones .btn {
+        flex: 1;
+        margin: 0 !important;
+    }
+
+}
+
+@media (max-width: 575.98px) {
+    .modal-footer {
+        flex-direction: column-reverse;
+    }
+
+    .modal-footer > .btn {
+        width: 100%;
+        margin: 0.25rem 0 0 0;
+    }
 }
 
 .valid.modified:not([type=checkbox]) {
@@ -84,7 +347,7 @@ a, .btn-link {
     }
 
         .loading-progress circle:last-child {
-            stroke: #1b6ec2;
+            stroke: #1b7f6b;
             stroke-dasharray: calc(3.141 * var(--blazor-load-percentage, 0%) * 0.8), 500%;
             transition: stroke-dasharray 0.05s ease-in-out;
         }

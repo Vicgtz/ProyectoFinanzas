@@ -1,4 +1,5 @@
-﻿@inherits LayoutComponentBase
+@inherits LayoutComponentBase
+
 <div class="page">
     <div class="sidebar">
         <NavMenu />
@@ -6,7 +7,13 @@
 
     <main>
         <div class="top-row px-4">
-            <a href="https://learn.microsoft.com/aspnet/core/" target="_blank">About</a>
+            <AuthorizeView>
+                <div class="usuario">
+                    <span class="avatar" aria-hidden="true">@Inicial(context.User.Identity?.Name)</span>
+                    <span class="nombre">@context.User.Identity?.Name</span>
+                </div>
+                <button class="btn btn-sm btn-outline-primary" @onclick="CerrarSesion">Salir</button>
+            </AuthorizeView>
         </div>
 
         <article class="content px-4">

@@ -1,0 +1,27 @@
+.inicio-bienvenida {
+    background: linear-gradient(120deg, var(--fz-verde-suave) 0%, #ffffff 70%);
+}
+
+.inicio-logo {
+    width: 96px;
+    height: 96px;
+    object-fit: contain;
+    flex: 0 0 auto;
+}
+
+.inicio-acceso {
+    color: var(--fz-texto);
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+}
+
+.inicio-acceso:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(15, 76, 69, 0.15);
+}
+
+.inicio-acceso-titulo {
+    font-weight: 600;
+    font-size: 1.1rem;
+    color: var(--fz-verde);
+    margin-bottom: 0.15rem;
+}

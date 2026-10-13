@@ -1,0 +1,103 @@
+@page "/personas"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+
+<PageTitle>Personas - Finanzas</PageTitle>
+
+<div class="page-header">
+    <h1>Personas</h1>
+    <button class="btn btn-primary" @onclick="Nueva">+ Nueva persona</button>
+</div>
+
+@if (!string.IsNullOrEmpty(error))
+{
+    <div class="alert alert-danger d-flex justify-content-between align-items-center" role="alert">
+        <span>@error</span>
+        <button class="btn btn-sm btn-outline-danger" @onclick="Cargar">Reintentar</button>
+    </div>
+}
+
+<div class="filtros">
+    <input type="search" class="form-control buscador" placeholder="Buscar persona..." aria-label="Buscar persona" @bind="busqueda" @bind:event="oninput" />
+    <div class="form-check form-switch mb-0">
+        <input class="form-check-input" type="checkbox" id="inactivas" @bind="mostrarInactivas" />
+        <label class="form-check-label" for="inactivas">Mostrar personas inactivas</label>
+    </div>
+</div>
+
+@if (cargando)
+{
+    <div class="text-center py-5">
+        <div class="spinner-border" role="status"><span class="visually-hidden">Cargando...</span></div>
+    </div>
+}
+else if (PersonasVisibles.Count == 0)
+{
+    <div class="text-center text-muted py-5">No hay personas para mostrar.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle bg-white table-cards">
+            <thead>
+                <tr>
+                    <th>Nombre</th>
+                    <th>Estado</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var p in PersonasVisibles)
+                {
+                    <tr class="@(p.Activa ? null : "text-muted")">
+                        <td class="fw-semibold">@p.Nombre</td>
+                        <td data-label="Estado">
+                            <span class="badge @(p.Activa ? "bg-success" : "bg-secondary")">@(p.Activa ? "Activa" : "Inactiva")</span>
+                        </td>
+                        <td class="text-end text-nowrap acciones">
+                            <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => Editar(p)">Editar</button>
+                            <button class="btn btn-sm btn-outline-secondary" @onclick="() => CambiarEstado(p)">@(p.Activa ? "Desactivar" : "Activar")</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+}
+
+@if (modalAbierto)
+{
+    <div class="modal-backdrop fade show"></div>
+    <div class="modal fade show d-block" tabindex="-1" role="dialog" aria-modal="true">
+        <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
+            <div class="modal-content">
+                <EditForm Model="form" OnSubmit="Guardar">
+                    <div class="modal-header">
+                        <h5 class="modal-title">@(editando ? "Editar persona" : "Nueva persona")</h5>
+                        <button type="button" class="btn-close" aria-label="Cerrar" @onclick="CerrarModal" disabled="@guardando"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label" for="nombre">Nombre</label>
+                            <InputText id="nombre" class="form-control" @bind-Value="form.Nombre" maxlength="150" disabled="@guardando" />
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(errorForm))
+                        {
+                            <div class="alert alert-danger py-2 mb-0" role="alert">@errorForm</div>
+                        }
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" @onclick="CerrarModal" disabled="@guardando">Cancelar</button>
+                        <button type="submit" class="btn btn-primary" disabled="@guardando">
+                            @if (guardando)
+                            {
+                                <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+                            }
+                            Guardar
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
