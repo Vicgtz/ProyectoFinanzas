@@ -29,5 +29,7 @@ builder.Services.AddScoped<CuentaService>();
 builder.Services.AddScoped<CategoriaService>();
 builder.Services.AddScoped<PersonaService>();
 builder.Services.AddScoped<OperacionService>();
+builder.Services.AddScoped<DashboardService>();
+builder.Services.AddScoped<MsiService>();
 
 await builder.Build().RunAsync();

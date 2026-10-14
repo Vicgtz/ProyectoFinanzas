@@ -1,0 +1,154 @@
+@using Finanzas.Models.Operacion
+@inject OperacionService OperacionApi
+@inject CuentaService CuentaApi
+@inject CategoriaService CategoriaApi
+@inject PersonaService PersonaApi
+
+<div class="modal-backdrop fade show"></div>
+<div class="modal fade show d-block" tabindex="-1" role="dialog" aria-modal="true">
+    <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
+        <div class="modal-content">
+            <EditForm Model="form" OnSubmit="Guardar">
+                <div class="modal-header">
+                    <h5 class="modal-title">@(Operacion == null ? "Nuevo movimiento" : "Editar movimiento")</h5>
+                    <button type="button" class="btn-close" aria-label="Cerrar" @onclick="Cancelar" disabled="@guardando"></button>
+                </div>
+                <div class="modal-body">
+                    @if (cargando)
+                    {
+                        <div class="text-center py-4"><div class="spinner-border" role="status"></div></div>
+                    }
+                    else
+                    {
+                        <div class="mb-3">
+                            <label class="form-label" for="mov-tipo">Tipo</label>
+                            <InputSelect id="mov-tipo" class="form-select" Value="form.TipoOperacion" ValueChanged="@((string t) => CambiarTipo(t))" ValueExpression="@(() => form.TipoOperacion)" disabled="@(guardando || Operacion != null)">
+                                @foreach (var t in Tipos)
+                                {
+                                    <option value="@t.Clave">@t.Texto</option>
+                                }
+                            </InputSelect>
+                        </div>
+
+                        @if (PidePersona)
+                        {
+                            <div class="mb-3">
+                                <label class="form-label" for="mov-persona">Persona</label>
+                                <InputSelect id="mov-persona" class="form-select" @bind-Value="form.PersonaId" disabled="@(guardando || PersonaIdInicial != null)">
+                                    <option value="">Selecciona...</option>
+                                    @foreach (var p in PersonasVisibles)
+                                    {
+                                        <option value="@p.Id">@p.Nombre</option>
+                                    }
+                                </InputSelect>
+                            </div>
+                        }
+
+                        @if (PideOrigen)
+                        {
+                            <div class="mb-3">
+                                <label class="form-label" for="mov-origen">@(EsTransferenciaOPago ? "Cuenta origen" : "Cuenta")</label>
+                                <InputSelect id="mov-origen" class="form-select" @bind-Value="form.CuentaOrigenId" disabled="@guardando">
+                                    <option value="">Selecciona...</option>
+                                    @foreach (var c in CuentasOrigen)
+                                    {
+                                        <option value="@c.Id">@c.Nombre</option>
+                                    }
+                                </InputSelect>
+                            </div>
+                        }
+
+                        @if (PideDestino)
+                        {
+                            <div class="mb-3">
+                                <label class="form-label" for="mov-destino">@(form.TipoOperacion == TipoOperacion.PagoTarjeta ? "Tarjeta a pagar" : EsTransferenciaOPago ? "Cuenta destino" : "Cuenta")</label>
+                                <InputSelect id="mov-destino" class="form-select" @bind-Value="form.CuentaDestinoId" disabled="@guardando">
+                                    <option value="">Selecciona...</option>
+                                    @foreach (var c in CuentasDestino)
+                                    {
+                                        <option value="@c.Id">@c.Nombre</option>
+                                    }
+                                </InputSelect>
+                            </div>
+                        }
+
+                        <div class="row g-3 mb-3">
+                            <div class="col-12 col-sm-6">
+                                <label class="form-label" for="mov-monto">Monto</label>
+                                <InputNumber id="mov-monto" class="form-control" @bind-Value="form.Monto" disabled="@guardando" />
+                            </div>
+                            <div class="col-12 col-sm-6">
+                                <label class="form-label" for="mov-fecha">Fecha</label>
+                                <InputDate id="mov-fecha" class="form-control" @bind-Value="fecha" max="@DateTime.Today.ToString("yyyy-MM-dd")" disabled="@guardando" />
+                            </div>
+                        </div>
+
+                        @if (PermiteMsi)
+                        {
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <InputCheckbox id="mov-msi" class="form-check-input" @bind-Value="esMsi" disabled="@guardando" />
+                                    <label class="form-check-label" for="mov-msi">Compra a meses sin intereses</label>
+                                </div>
+                                @if (esMsi)
+                                {
+                                    <div class="row g-2 align-items-center mt-1">
+                                        <div class="col-6">
+                                            <InputSelect id="mov-meses" class="form-select" @bind-Value="mesesMsi" disabled="@guardando">
+                                                @foreach (var m in OpcionesMeses)
+                                                {
+                                                    <option value="@m">@m meses</option>
+                                                }
+                                            </InputSelect>
+                                        </div>
+                                        <div class="col-6 small text-muted">
+                                            @if (form.Monto > 0)
+                                            {
+                                                <span>≈ $@((form.Monto / mesesMsi).ToString("N2")) al mes</span>
+                                            }
+                                        </div>
+                                    </div>
+                                    <div class="form-text">El gasto se registra completo y reduce tu crédito disponible; las mensualidades se proyectan en cada corte.</div>
+                                }
+                            </div>
+                        }
+
+                        @if (PideCategoria)
+                        {
+                            <div class="mb-3">
+                                <label class="form-label" for="mov-cat">Categoría</label>
+                                <InputSelect id="mov-cat" class="form-select" @bind-Value="form.CategoriaId" disabled="@guardando">
+                                    <option value="">Sin categoría</option>
+                                    @foreach (var c in CategoriasVisibles)
+                                    {
+                                        <option value="@c.Id">@c.NombreCompleto</option>
+                                    }
+                                </InputSelect>
+                            </div>
+                        }
+
+                        <div class="mb-3">
+                            <label class="form-label" for="mov-desc">Descripción</label>
+                            <InputText id="mov-desc" class="form-control" @bind-Value="form.Descripcion" maxlength="250" disabled="@guardando" />
+                        </div>
+                    }
+
+                    @if (!string.IsNullOrEmpty(errorForm))
+                    {
+                        <div class="alert alert-danger py-2 mb-0" role="alert">@errorForm</div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-secondary" @onclick="Cancelar" disabled="@guardando">Cancelar</button>
+                    <button type="submit" class="btn btn-primary" disabled="@(guardando || cargando)">
+                        @if (guardando)
+                        {
+                            <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+                        }
+                        Guardar
+                    </button>
+                </div>
+            </EditForm>
+        </div>
+    </div>
+</div>

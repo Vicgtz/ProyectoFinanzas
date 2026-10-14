@@ -22,6 +22,7 @@ public class OperacionService(HttpClient httpClient, NavigationManager navigatio
             ["tipoOperacion"] = filtro.TipoOperacion,
             ["cuentaId"] = filtro.CuentaId?.ToString(),
             ["categoriaId"] = filtro.CategoriaId?.ToString(),
+            ["personaId"] = filtro.PersonaId?.ToString(),
             ["skip"] = filtro.Skip.ToString(),
             ["take"] = filtro.Take.ToString()
         };

@@ -9,7 +9,7 @@ namespace Finanzas.Api.Controllers;
 [Route("api/[controller]")]
 [ApiController]
 [Authorize]
-public class CuentaController(CuentaService servicio) : ControllerBase
+public class CuentaController(CuentaService servicio, CuentaDetalleService detalle) : ControllerBase
 {
     private int IdUsuario => int.TryParse(User.FindFirst("IdUsuario")?.Value, out var id) ? id : 0;
 
@@ -36,4 +36,19 @@ public class CuentaController(CuentaService servicio) : ControllerBase
     [ProducesResponseType(typeof(BaseResponse), 200)]
     public async Task<IActionResult> Edit([FromBody] CuentaModel cuenta) =>
         Ok(await servicio.Edit(IdUsuario, cuenta));
+
+    [HttpGet("GetDetalle")]
+    [ProducesResponseType(typeof(BaseResponse<CuentaDetalleModel>), 200)]
+    public async Task<IActionResult> GetDetalle([FromQuery] int idCuenta) =>
+        Ok(await detalle.Get(IdUsuario, idCuenta));
+
+    [HttpPost("RegistrarCorte")]
+    [ProducesResponseType(typeof(BaseResponse), 200)]
+    public async Task<IActionResult> RegistrarCorte([FromBody] CorteRequest request) =>
+        Ok(await detalle.RegistrarCorte(IdUsuario, request));
+
+    [HttpPost("EliminarCorte")]
+    [ProducesResponseType(typeof(BaseResponse), 200)]
+    public async Task<IActionResult> EliminarCorte([FromQuery] long idCorte) =>
+        Ok(await detalle.EliminarCorte(IdUsuario, idCorte));
 }

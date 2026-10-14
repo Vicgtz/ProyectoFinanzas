@@ -1,0 +1,156 @@
+@page "/movimientos"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@using Finanzas.Models.Operacion
+
+<PageTitle>Movimientos - Finanzas</PageTitle>
+
+<div class="page-header">
+    <h1>Movimientos</h1>
+    <button class="btn btn-primary" @onclick="Nuevo">+ Movimiento</button>
+</div>
+
+@if (!string.IsNullOrEmpty(error))
+{
+    <div class="alert alert-danger d-flex justify-content-between align-items-center" role="alert">
+        <span>@error</span>
+        <button class="btn btn-sm btn-outline-danger" @onclick="Recargar">Reintentar</button>
+    </div>
+}
+
+<div class="card mb-3">
+    <div class="card-body">
+        <div class="row g-2">
+            <div class="col-6 col-md-2">
+                <label class="form-label small mb-1" for="f-desde">Desde</label>
+                <input id="f-desde" type="date" class="form-control form-control-sm" @bind="desde" @bind:after="Recargar" max="@DateTime.Today.ToString("yyyy-MM-dd")" />
+            </div>
+            <div class="col-6 col-md-2">
+                <label class="form-label small mb-1" for="f-hasta">Hasta</label>
+                <input id="f-hasta" type="date" class="form-control form-control-sm" @bind="hasta" @bind:after="Recargar" max="@DateTime.Today.ToString("yyyy-MM-dd")" />
+            </div>
+            <div class="col-6 col-md-2">
+                <label class="form-label small mb-1" for="f-tipo">Tipo</label>
+                <select id="f-tipo" class="form-select form-select-sm" @bind="tipo" @bind:after="Recargar">
+                    <option value="">Todos</option>
+                    <option value="@TipoOperacion.Gasto">Gasto</option>
+                    <option value="@TipoOperacion.Ingreso">Ingreso</option>
+                    <option value="@TipoOperacion.Transferencia">Transferencia</option>
+                    <option value="@TipoOperacion.PagoTarjeta">Pago de tarjeta</option>
+                    <option value="@TipoOperacion.PrestamoOtorgado">Préstamo otorgado</option>
+                    <option value="@TipoOperacion.DeudaAdquirida">Deuda adquirida</option>
+                    <option value="@TipoOperacion.CobroPrestamo">Abono recibido</option>
+                    <option value="@TipoOperacion.PagoDeudaPersona">Pago de deuda</option>
+                </select>
+            </div>
+            <div class="col-6 col-md-3">
+                <label class="form-label small mb-1" for="f-cuenta">Cuenta</label>
+                <select id="f-cuenta" class="form-select form-select-sm" @bind="cuentaId" @bind:after="Recargar">
+                    <option value="">Todas</option>
+                    @foreach (var c in cuentas)
+                    {
+                        <option value="@c.Id">@c.Nombre</option>
+                    }
+                </select>
+            </div>
+            <div class="col-12 col-md-3">
+                <label class="form-label small mb-1" for="f-cat">Categoría</label>
+                <select id="f-cat" class="form-select form-select-sm" @bind="categoriaId" @bind:after="Recargar">
+                    <option value="">Todas</option>
+                    @foreach (var c in categorias)
+                    {
+                        <option value="@c.Id">@c.NombreCompleto</option>
+                    }
+                </select>
+            </div>
+        </div>
+    </div>
+</div>
+
+@if (cargando)
+{
+    <div class="text-center py-5">
+        <div class="spinner-border" role="status"><span class="visually-hidden">Cargando...</span></div>
+    </div>
+}
+else if (operaciones.Count == 0)
+{
+    <div class="text-center text-muted py-5">No hay movimientos para mostrar.</div>
+}
+else
+{
+    <div class="table-responsive">
+        <table class="table table-hover align-middle bg-white table-cards">
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Descripción</th>
+                    <th>Tipo</th>
+                    <th>Categoría</th>
+                    <th>Cuenta</th>
+                    <th class="text-end">Monto</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var o in operaciones)
+                {
+                    <tr>
+                        <td class="text-nowrap" data-label="Fecha">@o.Fecha.ToString("dd/MM/yyyy")</td>
+                        <td class="fw-semibold">@(string.IsNullOrWhiteSpace(o.Descripcion) ? "—" : o.Descripcion)@if (o.Msi != null) {<span class="badge bg-info text-dark ms-1">@o.Msi.NumeroMeses MSI</span>}@if (o.PersonaNombre != null) {<span class="small text-muted fw-normal ms-1">· @o.PersonaNombre</span>}</td>
+                        <td data-label="Tipo"><span class="badge @ClaseTipo(o.TipoOperacion)">@NombreTipo(o.TipoOperacion)</span></td>
+                        <td data-label="Categoría">@(o.CategoriaNombre ?? "—")</td>
+                        <td data-label="Cuenta">@Cuentas(o)</td>
+                        <td class="text-end text-nowrap @ClaseMonto(o.TipoOperacion)" data-label="Monto">@Monto(o)</td>
+                        <td class="text-end text-nowrap acciones">
+                            <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => Editar(o)">Editar</button>
+                            <button class="btn btn-sm btn-outline-danger" @onclick="() => PedirEliminar(o)">Eliminar</button>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @if (hayMas)
+    {
+        <div class="text-center my-3">
+            <button class="btn btn-outline-primary" @onclick="CargarMas" disabled="@cargandoMas">
+                @if (cargandoMas)
+                {
+                    <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+                }
+                Cargar más
+            </button>
+        </div>
+    }
+}
+
+@if (formAbierto)
+{
+    <MovimientoForm Operacion="enEdicion" OnGuardado="Guardado" OnCancelado="CerrarForm" />
+}
+
+@if (aEliminar != null)
+{
+    <div class="modal-backdrop fade show"></div>
+    <div class="modal fade show d-block" tabindex="-1" role="dialog" aria-modal="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Eliminar movimiento</h5>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-0">¿Eliminar @NombreTipo(aEliminar.TipoOperacion).ToLower() de @Moneda(aEliminar.Monto) del @aEliminar.Fecha.ToString("dd/MM/yyyy")? Los saldos de las cuentas se revertirán.</p>
+                    @if (!string.IsNullOrEmpty(errorEliminar))
+                    {
+                        <div class="alert alert-danger py-2 mt-3 mb-0" role="alert">@errorEliminar</div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline-secondary" @onclick="() => aEliminar = null" disabled="@eliminando">Cancelar</button>
+                    <button class="btn btn-danger" @onclick="Eliminar" disabled="@eliminando">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}

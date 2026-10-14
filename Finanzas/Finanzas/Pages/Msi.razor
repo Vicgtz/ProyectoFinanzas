@@ -1,0 +1,116 @@
+@page "/msi"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@using Finanzas.Models.Msi
+
+<PageTitle>Meses sin intereses - Finanzas</PageTitle>
+
+<div class="page-header">
+    <div>
+        <h1>Meses sin intereses</h1>
+        <div class="text-muted small">Mensualidades futuras de tus compras a MSI. Son una proyección: no se registran como gastos.</div>
+    </div>
+    <a class="btn btn-primary" href="movimientos">+ Compra a MSI</a>
+</div>
+
+@if (!string.IsNullOrEmpty(error))
+{
+    <div class="alert alert-danger d-flex justify-content-between align-items-center" role="alert">
+        <span>@error</span>
+        <button class="btn btn-sm btn-outline-danger" @onclick="Cargar">Reintentar</button>
+    </div>
+}
+
+@if (cargando)
+{
+    <div class="text-center py-5">
+        <div class="spinner-border" role="status"><span class="visually-hidden">Cargando...</span></div>
+    </div>
+}
+else if (datos != null)
+{
+    <div class="row g-3 mb-3">
+        <div class="col-12 col-md-4">
+            <div class="card h-100"><div class="card-body">
+                <div class="resumen-etiqueta">Total por cobrar</div>
+                <div class="resumen-valor text-danger">@Moneda(datos.TotalPendiente)</div>
+                <div class="small text-muted">Ya está incluido en la deuda de tus tarjetas</div>
+            </div></div>
+        </div>
+        <div class="col-6 col-md-4">
+            <div class="card h-100"><div class="card-body">
+                <div class="resumen-etiqueta">Falta este mes</div>
+                <div class="resumen-valor">@Moneda(datos.MesActual)</div>
+            </div></div>
+        </div>
+        <div class="col-6 col-md-4">
+            <div class="card h-100"><div class="card-body">
+                <div class="resumen-etiqueta">Mes siguiente</div>
+                <div class="resumen-valor">@Moneda(datos.MesSiguiente)</div>
+            </div></div>
+        </div>
+    </div>
+
+    @if (datos.TotalPendiente > 0)
+    {
+        <div class="card mb-3"><div class="card-body">
+            <h2 class="seccion-titulo">Compromisos por mes</h2>
+            <div class="msi-barras">
+                @foreach (var m in datos.Calendario)
+                {
+                    <div class="msi-mes" title="@Moneda(m.Importe)">
+                        <div class="msi-importe">@(m.Importe > 0 ? Corto(m.Importe) : "")</div>
+                        <div class="msi-barra" style="height:@Altura(m.Importe)%"></div>
+                        <div class="msi-etiqueta">@NombreMes(m.Mes)</div>
+                    </div>
+                }
+            </div>
+        </div></div>
+    }
+
+    <div class="form-check form-switch mb-3">
+        <input class="form-check-input" type="checkbox" id="liquidadas" @bind="mostrarLiquidadas" />
+        <label class="form-check-label" for="liquidadas">Mostrar compras liquidadas</label>
+    </div>
+
+    @if (PlanesVisibles.Count == 0)
+    {
+        <div class="text-center text-muted py-5">No hay compras a meses sin intereses para mostrar.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle bg-white table-cards">
+                <thead>
+                    <tr>
+                        <th>Compra</th>
+                        <th>Tarjeta</th>
+                        <th class="text-end">Total</th>
+                        <th class="text-end">Mensualidad</th>
+                        <th>Avance</th>
+                        <th class="text-end">Por cobrar</th>
+                        <th>Próxima</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in PlanesVisibles)
+                    {
+                        <tr class="@(p.MensualidadesRestantes == 0 ? "text-muted" : null)">
+                            <td class="fw-semibold">@p.Descripcion<div class="small text-muted fw-normal">@p.FechaCompra.ToString("dd/MM/yyyy")</div></td>
+                            <td data-label="Tarjeta">@p.CuentaNombre</td>
+                            <td class="text-end" data-label="Total">@Moneda(p.MontoCompra)</td>
+                            <td class="text-end" data-label="Mensualidad">@Moneda(p.ImporteMensual)</td>
+                            <td data-label="Avance" style="min-width:9rem">
+                                <div class="progress" role="progressbar" aria-label="Avance" style="height:6px">
+                                    <div class="progress-bar bg-success" style="width:@Porcentaje(p)%"></div>
+                                </div>
+                                <div class="small text-muted">@p.MensualidadesTranscurridas de @p.NumeroMeses</div>
+                            </td>
+                            <td class="text-end" data-label="Por cobrar">@Moneda(p.SaldoPendiente)</td>
+                            <td data-label="Próxima">@(p.ProximaMensualidad?.ToString("dd/MM/yyyy") ?? "Liquidada")</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+}

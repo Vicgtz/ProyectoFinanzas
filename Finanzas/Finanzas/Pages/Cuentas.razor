@@ -72,7 +72,7 @@ else
                 @foreach (var c in CuentasVisibles)
                 {
                     <tr class="@(c.Activa ? null : "text-muted")">
-                        <td class="fw-semibold">@c.Nombre</td>
+                        <td class="fw-semibold"><a href="cuentas/@c.Id" class="text-decoration-none">@c.Nombre</a></td>
                         <td data-label="Tipo">@NombreTipo(c.TipoCuenta)</td>
                         <td class="text-end" data-label="@(EsCredito(c) ? "Deuda" : "Saldo")">@Moneda(c.Saldo)</td>
                         @if (EsCredito(c))
@@ -89,6 +89,7 @@ else
                             <span class="badge @(c.Activa ? "bg-success" : "bg-secondary")">@(c.Activa ? "Activa" : "Inactiva")</span>
                         </td>
                         <td class="text-end text-nowrap acciones">
+                            <a class="btn btn-sm btn-outline-primary me-1" href="cuentas/@c.Id">Detalle</a>
                             <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => Editar(c)">Editar</button>
                             <button class="btn btn-sm btn-outline-secondary" @onclick="() => CambiarEstado(c)">@(c.Activa ? "Desactivar" : "Activar")</button>
                         </td>

@@ -1,0 +1,39 @@
+.msi-barras {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.4rem;
+    height: 170px;
+    overflow-x: auto;
+}
+
+.msi-mes {
+    flex: 1 1 0;
+    min-width: 2.2rem;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    align-items: center;
+}
+
+.msi-barra {
+    width: 70%;
+    max-width: 34px;
+    background: var(--fz-acento);
+    border-radius: 4px 4px 0 0;
+}
+
+.msi-importe {
+    font-size: 0.7rem;
+    color: #6b7c77;
+    min-height: 1rem;
+}
+
+.msi-etiqueta {
+    font-size: 0.75rem;
+    color: #6b7c77;
+    padding-top: 0.25rem;
+    border-top: 1px solid var(--fz-borde);
+    width: 100%;
+    text-align: center;
+}

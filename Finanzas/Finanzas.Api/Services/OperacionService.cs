@@ -11,7 +11,12 @@ namespace Finanzas.Api.Services;
 public class OperacionService(FinanzasDbContext context)
 {
     private static readonly string[] TiposSoportados =
-        [TipoOperacion.Gasto, TipoOperacion.Ingreso, TipoOperacion.Transferencia, TipoOperacion.PagoTarjeta];
+        [TipoOperacion.Gasto, TipoOperacion.Ingreso, TipoOperacion.Transferencia, TipoOperacion.PagoTarjeta,
+         TipoOperacion.PrestamoOtorgado, TipoOperacion.DeudaAdquirida, TipoOperacion.CobroPrestamo, TipoOperacion.PagoDeudaPersona];
+
+    // Préstamos y deudas ligados a una persona: no son ingresos ni gastos.
+    private static readonly string[] TiposPersona =
+        [TipoOperacion.PrestamoOtorgado, TipoOperacion.DeudaAdquirida, TipoOperacion.CobroPrestamo, TipoOperacion.PagoDeudaPersona];
 
     public async Task<BaseResponse<OperacionModel>> Get(int idUsuario, long idOperacion)
     {
@@ -28,6 +33,7 @@ public class OperacionService(FinanzasDbContext context)
         if (filtro.Hasta != null) query = query.Where(a => a.Fecha < filtro.Hasta.Value.Date.AddDays(1));
         if (!string.IsNullOrEmpty(filtro.TipoOperacion)) query = query.Where(a => a.TipoOperacion == filtro.TipoOperacion);
         if (filtro.CategoriaId != null) query = query.Where(a => a.CategoriaId == filtro.CategoriaId);
+        if (filtro.PersonaId != null) query = query.Where(a => a.PersonaId == filtro.PersonaId);
         if (filtro.CuentaId != null) query = query.Where(a => a.MovimientoCuentas.Any(m => m.CuentaId == filtro.CuentaId));
 
         var take = Math.Clamp(filtro.Take, 1, 200);
@@ -52,9 +58,13 @@ public class OperacionService(FinanzasDbContext context)
 
         var operacion = new Operacion { UsuarioId = idUsuario };
         var aplicado = Aplicar(operacion, request, cuentas);
+        if (aplicado.Success) aplicado = AplicarMsi(operacion, request, cuentas);
         if (!aplicado.Success) { context.ChangeTracker.Clear(); return aplicado; }
         var saldos = ValidarSaldos(cuentas);
         if (!saldos.Success) { context.ChangeTracker.Clear(); return saldos; }
+
+        var persona = await ValidarPersona(idUsuario, request, null, null);
+        if (!persona.Success) { context.ChangeTracker.Clear(); return persona; }
 
         context.Operacions.Add(operacion);
         return await Guardar(operacion);
@@ -68,7 +78,7 @@ public class OperacionService(FinanzasDbContext context)
         var categoria = await ValidarCategoria(request);
         if (!categoria.Success) return categoria;
 
-        var operacion = await context.Operacions.Include(a => a.MovimientoCuentas)
+        var operacion = await context.Operacions.Include(a => a.MovimientoCuentas).Include(a => a.CompraMsi)
             .FirstOrDefaultAsync(a => a.Id == request.Id && a.UsuarioId == idUsuario);
         if (operacion == null) return new BaseResponse { Message = "Operación no existe" };
         if (!TiposSoportados.Contains(operacion.TipoOperacion))
@@ -81,13 +91,18 @@ public class OperacionService(FinanzasDbContext context)
         var reversa = Revertir(operacion, cuentas);
         if (!reversa.Success) { context.ChangeTracker.Clear(); return reversa; }
 
+        var personaAnterior = operacion.PersonaId;
         context.MovimientoCuentas.RemoveRange(operacion.MovimientoCuentas.ToList());
         operacion.MovimientoCuentas.Clear();
 
         var aplicado = Aplicar(operacion, request, cuentas);
+        if (aplicado.Success) aplicado = AplicarMsi(operacion, request, cuentas);
         if (!aplicado.Success) { context.ChangeTracker.Clear(); return aplicado; }
         var saldos = ValidarSaldos(cuentas);
         if (!saldos.Success) { context.ChangeTracker.Clear(); return saldos; }
+
+        var persona = await ValidarPersona(idUsuario, request, operacion.Id, personaAnterior);
+        if (!persona.Success) { context.ChangeTracker.Clear(); return persona; }
 
         operacion.FechaActualizacion = DateTime.UtcNow;
         return await Guardar(operacion);
@@ -95,7 +110,7 @@ public class OperacionService(FinanzasDbContext context)
 
     public async Task<BaseResponse> Delete(int idUsuario, long idOperacion)
     {
-        var operacion = await context.Operacions.Include(a => a.MovimientoCuentas)
+        var operacion = await context.Operacions.Include(a => a.MovimientoCuentas).Include(a => a.CompraMsi)
             .FirstOrDefaultAsync(a => a.Id == idOperacion && a.UsuarioId == idUsuario);
         if (operacion == null) return new BaseResponse { Message = "Operación no existe" };
         if (!TiposSoportados.Contains(operacion.TipoOperacion))
@@ -107,7 +122,12 @@ public class OperacionService(FinanzasDbContext context)
         var saldos = ValidarSaldos(cuentas);
         if (!saldos.Success) { context.ChangeTracker.Clear(); return saldos; }
 
+        // No se puede borrar un préstamo o deuda que ya tiene abonos: el saldo de la persona quedaría negativo.
+        var persona = await ValidarPersona(idUsuario, null, operacion.Id, operacion.PersonaId);
+        if (!persona.Success) { context.ChangeTracker.Clear(); return persona; }
+
         context.MovimientoCuentas.RemoveRange(operacion.MovimientoCuentas);
+        if (operacion.CompraMsi != null) context.CompraMsis.Remove(operacion.CompraMsi);
         context.Operacions.Remove(operacion);
         return await Guardar(operacion);
     }
@@ -173,6 +193,25 @@ public class OperacionService(FinanzasDbContext context)
                 movimientos.Add((tarjeta!, -monto));
                 break;
             }
+            // Préstamos y deudas personales: solo mueven efectivo o débito, nunca una tarjeta.
+            case TipoOperacion.PrestamoOtorgado:
+            case TipoOperacion.PagoDeudaPersona:
+            {
+                var origen = Buscar(r.CuentaOrigenId, "origen", out err);
+                if (err != null) return err;
+                if (EsCredito(origen!)) return new BaseResponse { Message = "Esta operación debe salir de una cuenta de débito o efectivo" };
+                movimientos.Add((origen!, -monto));
+                break;
+            }
+            case TipoOperacion.DeudaAdquirida:
+            case TipoOperacion.CobroPrestamo:
+            {
+                var destino = Buscar(r.CuentaDestinoId, "destino", out err);
+                if (err != null) return err;
+                if (EsCredito(destino!)) return new BaseResponse { Message = "El dinero debe entrar a una cuenta de débito o efectivo" };
+                movimientos.Add((destino!, monto));
+                break;
+            }
             default:
                 return new BaseResponse { Message = "Tipo de operación no soportado" };
         }
@@ -184,6 +223,7 @@ public class OperacionService(FinanzasDbContext context)
         }
 
         operacion.TipoOperacion = r.TipoOperacion;
+        operacion.PersonaId = TiposPersona.Contains(r.TipoOperacion) ? r.PersonaId : null;
         operacion.Monto = monto;
         operacion.Fecha = r.Fecha ?? DateTime.Now;
         operacion.Descripcion = string.IsNullOrWhiteSpace(r.Descripcion) ? null : r.Descripcion.Trim();
@@ -229,6 +269,86 @@ public class OperacionService(FinanzasDbContext context)
 
     private static bool EsCredito(Cuenta c) => c.TipoCuenta == TipoCuentaItem.Credito;
 
+    // Saldo con una persona: por cobrar = prestado - abonado por ella; por pagar = recibido - pagado por mí.
+    // Se revalida con las operaciones ya guardadas (sin la que se edita o borra) más la nueva, para que ninguno quede negativo.
+    private async Task<BaseResponse> ValidarPersona(int idUsuario, OperacionRequest? nueva, long? excluirId, int? personaAnterior)
+    {
+        var aplicaNueva = nueva != null && TiposPersona.Contains(nueva.TipoOperacion);
+        var ids = new HashSet<int>();
+        if (aplicaNueva) ids.Add(nueva!.PersonaId!.Value);
+        if (personaAnterior != null) ids.Add(personaAnterior.Value);
+
+        if (aplicaNueva)
+        {
+            var persona = await context.Personas.AsNoTracking()
+                .FirstOrDefaultAsync(a => a.Id == nueva!.PersonaId && a.UsuarioId == idUsuario);
+            if (persona == null) return new BaseResponse { Message = "Persona no encontrada" };
+            if (!persona.Activa && nueva!.PersonaId != personaAnterior) return new BaseResponse { Message = $"La persona {persona.Nombre} está inactiva" };
+        }
+
+        foreach (var id in ids)
+        {
+            var totales = await context.Operacions.AsNoTracking()
+                .Where(a => a.UsuarioId == idUsuario && a.PersonaId == id && a.Id != excluirId)
+                .GroupBy(a => a.TipoOperacion)
+                .Select(g => new { Tipo = g.Key, Total = g.Sum(x => x.Monto) })
+                .ToDictionaryAsync(g => g.Tipo, g => g.Total);
+
+            decimal Total(string tipo) => totales.GetValueOrDefault(tipo) +
+                (aplicaNueva && nueva!.PersonaId == id && nueva.TipoOperacion == tipo ? decimal.Round(nueva.Monto, 2) : 0);
+
+            var borrando = nueva == null;
+            if (Total(TipoOperacion.PrestamoOtorgado) - Total(TipoOperacion.CobroPrestamo) < 0)
+                return new BaseResponse { Message = borrando ? "No se puede eliminar: el préstamo ya tiene abonos registrados" : "El abono recibido no puede superar lo que esta persona te debe" };
+            if (Total(TipoOperacion.DeudaAdquirida) - Total(TipoOperacion.PagoDeudaPersona) < 0)
+                return new BaseResponse { Message = borrando ? "No se puede eliminar: la deuda ya tiene pagos registrados" : "El pago no puede superar lo que le debes a esta persona" };
+        }
+        return new BaseResponse { Success = true };
+    }
+
+    // Compra a meses sin intereses: el gasto ya se registró completo en Aplicar (sube la deuda por el total);
+    // aquí solo se guarda el plan de mensualidades, sin crear gastos ficticios.
+    private BaseResponse AplicarMsi(Operacion operacion, OperacionRequest r, Dictionary<int, Cuenta> cuentas)
+    {
+        var existente = operacion.CompraMsi;
+        if (r.NumeroMeses == null)
+        {
+            if (existente != null)
+            {
+                context.CompraMsis.Remove(existente);
+                operacion.CompraMsi = null;
+            }
+            return new BaseResponse { Success = true };
+        }
+
+        var tarjeta = cuentas[r.CuentaOrigenId!.Value];
+        if (!EsCredito(tarjeta)) return new BaseResponse { Message = "Los meses sin intereses solo aplican a tarjetas de crédito" };
+
+        var meses = r.NumeroMeses.Value;
+        var mensual = decimal.Round(operacion.Monto / meses, 2);
+        if (mensual <= 0 || operacion.Monto - mensual * (meses - 1) <= 0)
+            return new BaseResponse { Message = "El monto es demasiado pequeño para ese número de meses" };
+
+        var primera = PrimerCorteDespues(operacion.Fecha.Date, tarjeta.DiaCorte ?? 1);
+        var msi = existente ?? new CompraMsi();
+        msi.CuentaCreditoId = tarjeta.Id;
+        msi.MontoCompra = operacion.Monto;
+        msi.NumeroMeses = (short)meses;
+        msi.ImporteMensual = mensual;
+        msi.FechaPrimeraMensualidad = primera;
+        operacion.CompraMsi = msi;
+        return new BaseResponse { Success = true };
+    }
+
+    // Primer corte posterior a la compra: la compra hecha el día de corte cae en el periodo siguiente.
+    private static DateTime PrimerCorteDespues(DateTime fecha, int diaCorte)
+    {
+        var esteMes = new DateTime(fecha.Year, fecha.Month, Math.Min(diaCorte, DateTime.DaysInMonth(fecha.Year, fecha.Month)));
+        if (esteMes > fecha) return esteMes;
+        var siguiente = fecha.AddMonths(1);
+        return new DateTime(siguiente.Year, siguiente.Month, Math.Min(diaCorte, DateTime.DaysInMonth(siguiente.Year, siguiente.Month)));
+    }
+
     // ---- Apoyo ----
 
     private async Task<Dictionary<int, Cuenta>> CargarCuentas(int idUsuario, params int?[] ids)
@@ -262,7 +382,11 @@ public class OperacionService(FinanzasDbContext context)
     {
         if (!TiposSoportados.Contains(r.TipoOperacion)) return new BaseResponse { Message = "Tipo de operación inválido" };
         if (r.Monto <= 0) return new BaseResponse { Message = "El monto debe ser mayor a cero" };
+        if (TiposPersona.Contains(r.TipoOperacion) && r.PersonaId == null) return new BaseResponse { Message = "Selecciona la persona" };
+        if (r.NumeroMeses != null && r.TipoOperacion != TipoOperacion.Gasto) return new BaseResponse { Message = "Los meses sin intereses solo aplican a gastos" };
+        if (r.NumeroMeses is < 2 or > 60) return new BaseResponse { Message = "Los meses sin intereses deben estar entre 2 y 60" };
         if (decimal.Round(r.Monto, 2) <= 0) return new BaseResponse { Message = "El monto es demasiado pequeño" };
+        if (r.Fecha != null && r.Fecha.Value.Date > DateTime.Today) return new BaseResponse { Message = "No se permiten operaciones con fecha futura" };
         if (r.Descripcion?.Trim().Length > 250) return new BaseResponse { Message = "Descripción supera los caracteres permitidos" };
         return new BaseResponse { Success = true };
     }
@@ -279,6 +403,14 @@ public class OperacionService(FinanzasDbContext context)
         Descripcion = a.Descripcion,
         CategoriaId = a.CategoriaId,
         CategoriaNombre = a.Categoria == null ? null : a.Categoria.Nombre,
+        PersonaId = a.PersonaId,
+        PersonaNombre = a.Persona == null ? null : a.Persona.Nombre,
+        Msi = a.CompraMsi == null ? null : new MsiOperacionModel
+        {
+            NumeroMeses = a.CompraMsi.NumeroMeses,
+            ImporteMensual = a.CompraMsi.ImporteMensual,
+            FechaPrimeraMensualidad = a.CompraMsi.FechaPrimeraMensualidad
+        },
         Movimientos = a.MovimientoCuentas.Select(m => new MovimientoModel
         {
             CuentaId = m.CuentaId,

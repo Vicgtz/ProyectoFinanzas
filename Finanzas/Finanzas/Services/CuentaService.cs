@@ -22,4 +22,13 @@ public class CuentaService(HttpClient httpClient, NavigationManager navigation, 
 
     public Task<BaseResponse> Edit(CuentaModel cuenta) =>
         PostResponse("Edit", cuenta, error: "Cuenta no guardada");
+
+    public Task<BaseResponse<CuentaDetalleModel>> GetDetalle(int idCuenta) =>
+        GetData<CuentaDetalleModel>("GetDetalle", new Dictionary<string, string?> { ["idCuenta"] = idCuenta.ToString() }, "No se pudo cargar la cuenta");
+
+    public Task<BaseResponse> RegistrarCorte(CorteRequest request) =>
+        PostResponse("RegistrarCorte", request, error: "Corte no registrado");
+
+    public Task<BaseResponse> EliminarCorte(long idCorte) =>
+        PostResponse("EliminarCorte", query: new Dictionary<string, string?> { ["idCorte"] = idCorte.ToString() }, error: "Corte no eliminado");
 }

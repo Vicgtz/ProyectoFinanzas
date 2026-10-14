@@ -1,0 +1,139 @@
+@page "/personas/{Id:int}"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@using Finanzas.Models.Operacion
+
+<PageTitle>@(persona?.Nombre ?? "Persona") - Finanzas</PageTitle>
+
+<div class="page-header">
+    <div>
+        <a href="personas" class="small text-decoration-none">&lsaquo; Personas</a>
+        <h1>@(persona?.Nombre ?? "Persona")</h1>
+    </div>
+    @if (persona != null)
+    {
+        <span class="badge @(persona.Activa ? "bg-success" : "bg-secondary")">@(persona.Activa ? "Activa" : "Inactiva")</span>
+    }
+</div>
+
+@if (!string.IsNullOrEmpty(error))
+{
+    <div class="alert alert-danger d-flex justify-content-between align-items-center" role="alert">
+        <span>@error</span>
+        <button class="btn btn-sm btn-outline-danger" @onclick="Cargar">Reintentar</button>
+    </div>
+}
+
+@if (cargando && persona == null)
+{
+    <div class="text-center py-5">
+        <div class="spinner-border" role="status"><span class="visually-hidden">Cargando...</span></div>
+    </div>
+}
+else if (persona != null)
+{
+    <div class="row g-3 mb-3">
+        <div class="col-12 col-md-4">
+            <div class="card h-100"><div class="card-body">
+                <div class="resumen-etiqueta">Te debe</div>
+                <div class="resumen-valor text-success">@Moneda(persona.PorCobrar)</div>
+                <div class="small text-muted">Préstamos que le diste menos sus abonos</div>
+            </div></div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card h-100"><div class="card-body">
+                <div class="resumen-etiqueta">Le debes</div>
+                <div class="resumen-valor text-danger">@Moneda(persona.PorPagar)</div>
+                <div class="small text-muted">Lo que te prestó menos tus pagos</div>
+            </div></div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card h-100"><div class="card-body">
+                <div class="resumen-etiqueta">Balance</div>
+                <div class="resumen-valor @(persona.Neto > 0 ? "text-success" : persona.Neto < 0 ? "text-danger" : null)">@Moneda(Math.Abs(persona.Neto))</div>
+                <div class="small text-muted">@(persona.Neto > 0 ? "A tu favor" : persona.Neto < 0 ? "En tu contra" : "Sin saldo pendiente")</div>
+            </div></div>
+        </div>
+    </div>
+
+    <div class="d-flex flex-wrap gap-2 mb-3">
+        <button class="btn btn-primary btn-sm" @onclick="() => Abrir(TipoOperacion.PrestamoOtorgado)">Prestarle dinero</button>
+        <button class="btn btn-primary btn-sm" @onclick="() => Abrir(TipoOperacion.DeudaAdquirida)">Me prestó dinero</button>
+        <button class="btn btn-outline-primary btn-sm" @onclick="() => Abrir(TipoOperacion.CobroPrestamo)" disabled="@(persona.PorCobrar <= 0)">Registrar abono recibido</button>
+        <button class="btn btn-outline-primary btn-sm" @onclick="() => Abrir(TipoOperacion.PagoDeudaPersona)" disabled="@(persona.PorPagar <= 0)">Registrar pago que hice</button>
+    </div>
+
+    <h2 class="seccion-titulo">Historial</h2>
+
+    @if (operaciones.Count == 0)
+    {
+        <div class="text-center text-muted py-4">Todavía no hay operaciones con esta persona.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle bg-white table-cards">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Descripción</th>
+                        <th>Tipo</th>
+                        <th>Cuenta</th>
+                        <th class="text-end">Monto</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var o in operaciones)
+                    {
+                        <tr>
+                            <td class="text-nowrap" data-label="Fecha">@o.Fecha.ToString("dd/MM/yyyy")</td>
+                            <td class="fw-semibold">@(string.IsNullOrWhiteSpace(o.Descripcion) ? "—" : o.Descripcion)</td>
+                            <td data-label="Tipo"><span class="badge bg-primary">@TipoOperacionTexto.Nombre(o.TipoOperacion)</span></td>
+                            <td data-label="Cuenta">@string.Join(", ", o.Movimientos.Select(m => m.CuentaNombre))</td>
+                            <td class="text-end text-nowrap" data-label="Monto">@Signo(o)@Moneda(o.Monto)</td>
+                            <td class="text-end text-nowrap acciones">
+                                <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => Editar(o)">Editar</button>
+                                <button class="btn btn-sm btn-outline-danger" @onclick="() => PedirEliminar(o)">Eliminar</button>
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (hayMas)
+        {
+            <div class="text-center my-3">
+                <button class="btn btn-outline-primary" @onclick="CargarMas" disabled="@cargandoMas">Cargar más</button>
+            </div>
+        }
+    }
+}
+
+@if (formAbierto && persona != null)
+{
+    <MovimientoForm Operacion="enEdicion" TipoInicial="@tipoNuevo" PersonaIdInicial="persona.Id" OnGuardado="Guardado" OnCancelado="() => formAbierto = false" />
+}
+
+@if (aEliminar != null)
+{
+    <div class="modal-backdrop fade show"></div>
+    <div class="modal fade show d-block" tabindex="-1" role="dialog" aria-modal="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header"><h5 class="modal-title">Eliminar operación</h5></div>
+                <div class="modal-body">
+                    <p class="mb-0">¿Eliminar @TipoOperacionTexto.Nombre(aEliminar.TipoOperacion).ToLower() de @Moneda(aEliminar.Monto) del @aEliminar.Fecha.ToString("dd/MM/yyyy")? El saldo de la cuenta se revertirá.</p>
+                    @if (!string.IsNullOrEmpty(errorEliminar))
+                    {
+                        <div class="alert alert-danger py-2 mt-3 mb-0" role="alert">@errorEliminar</div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline-secondary" @onclick="() => aEliminar = null" disabled="@eliminando">Cancelar</button>
+                    <button class="btn btn-danger" @onclick="Eliminar" disabled="@eliminando">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}

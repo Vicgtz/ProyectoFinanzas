@@ -1,5 +1,6 @@
 using Finanzas.Data;
 using Finanzas.Models;
+using Finanzas.Models.Operacion;
 using Finanzas.Models.Persona;
 using Microsoft.EntityFrameworkCore;
 
@@ -15,6 +16,9 @@ public class PersonaService(FinanzasDbContext context)
             .FirstOrDefaultAsync();
 
         if (persona == null) return new BaseResponse<PersonaModel> { Message = "Persona no encontrada" };
+
+        var saldos = await Saldos(idUsuario, idPersona);
+        if (saldos.TryGetValue(persona.Id, out var s)) (persona.PorCobrar, persona.PorPagar) = s;
         return new BaseResponse<PersonaModel> { Success = true, Data = persona };
     }
 
@@ -25,6 +29,10 @@ public class PersonaService(FinanzasDbContext context)
             .OrderBy(a => a.Nombre)
             .Select(a => ToModel(a))
             .ToListAsync();
+
+        var saldos = await Saldos(idUsuario, null);
+        foreach (var p in personas)
+            if (saldos.TryGetValue(p.Id, out var s)) (p.PorCobrar, p.PorPagar) = s;
 
         return new BaseResponse<List<PersonaModel>> { Success = true, Data = personas };
     }
@@ -61,6 +69,25 @@ public class PersonaService(FinanzasDbContext context)
 
         await context.SaveChangesAsync();
         return new BaseResponse { Success = true, Message = "Guardado", Id = actual.Id };
+    }
+
+    // Por cobrar = prestado - abonado por la persona; por pagar = recibido - pagado por mí.
+    private async Task<Dictionary<int, (decimal PorCobrar, decimal PorPagar)>> Saldos(int idUsuario, int? idPersona)
+    {
+        var totales = await context.Operacions.AsNoTracking()
+            .Where(a => a.UsuarioId == idUsuario && a.PersonaId != null && (idPersona == null || a.PersonaId == idPersona))
+            .GroupBy(a => new { a.PersonaId, a.TipoOperacion })
+            .Select(g => new { PersonaId = g.Key.PersonaId!.Value, g.Key.TipoOperacion, Total = g.Sum(x => x.Monto) })
+            .ToListAsync();
+
+        return totales.GroupBy(t => t.PersonaId).ToDictionary(
+            g => g.Key,
+            g =>
+            {
+                decimal Suma(string tipo) => g.Where(t => t.TipoOperacion == tipo).Sum(t => t.Total);
+                return (Suma(TipoOperacion.PrestamoOtorgado) - Suma(TipoOperacion.CobroPrestamo),
+                        Suma(TipoOperacion.DeudaAdquirida) - Suma(TipoOperacion.PagoDeudaPersona));
+            });
     }
 
     private static PersonaModel ToModel(Persona a) => new()

@@ -1,41 +1,172 @@
 @page "/"
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@using Finanzas.Models.Dashboard
 
 <PageTitle>Inicio - Finanzas</PageTitle>
 
-<div class="card inicio-bienvenida border-0 mb-4">
-    <div class="card-body d-flex flex-column flex-sm-row align-items-center gap-3 p-4">
-        <img src="Logo.png" alt="Logo de Finanzas" class="inicio-logo" />
-        <div class="text-center text-sm-start">
-            <h1 class="mb-1">Hola, @Nombre</h1>
-            <p class="mb-0 text-muted">Lleva el control de tu dinero: cuentas, categorías y personas en un solo lugar.</p>
-        </div>
+<div class="page-header">
+    <div>
+        <h1>Hola, @Nombre</h1>
+        <div class="text-muted small">Resumen de tu situación financiera</div>
     </div>
+    <button class="btn btn-primary" @onclick="() => movimientoAbierto = true">+ Movimiento</button>
 </div>
 
-<div class="row g-3">
-    <div class="col-12 col-md-4">
-        <a href="cuentas" class="card inicio-acceso h-100 text-decoration-none">
-            <div class="card-body">
-                <div class="inicio-acceso-titulo">Cuentas</div>
-                <div class="text-muted small">Efectivo, débito y tarjetas de crédito.</div>
-            </div>
-        </a>
-    </div>
-    <div class="col-12 col-md-4">
-        <a href="categorias" class="card inicio-acceso h-100 text-decoration-none">
-            <div class="card-body">
-                <div class="inicio-acceso-titulo">Categorías</div>
-                <div class="text-muted small">Ingresos y gastos para clasificar tu dinero.</div>
-            </div>
-        </a>
-    </div>
-    <div class="col-12 col-md-4">
-        <a href="personas" class="card inicio-acceso h-100 text-decoration-none">
-            <div class="card-body">
-                <div class="inicio-acceso-titulo">Personas</div>
-                <div class="text-muted small">Con quién compartes préstamos y deudas.</div>
-            </div>
-        </a>
-    </div>
+<div class="d-flex align-items-center justify-content-center gap-2 mb-3">
+    <button class="btn btn-sm btn-outline-primary" @onclick="() => CambiarMes(-1)" aria-label="Mes anterior" disabled="@cargando">&lsaquo;</button>
+    <div class="mes-actual">@NombreMes(mes, anio)</div>
+    <button class="btn btn-sm btn-outline-primary" @onclick="() => CambiarMes(1)" aria-label="Mes siguiente" disabled="@(cargando || EsMesActual)">&rsaquo;</button>
 </div>
+
+@if (!string.IsNullOrEmpty(error))
+{
+    <div class="alert alert-danger d-flex justify-content-between align-items-center" role="alert">
+        <span>@error</span>
+        <button class="btn btn-sm btn-outline-danger" @onclick="Cargar">Reintentar</button>
+    </div>
+}
+
+@if (cargando && datos == null)
+{
+    <div class="text-center py-5">
+        <div class="spinner-border" role="status"><span class="visually-hidden">Cargando...</span></div>
+    </div>
+}
+else if (datos != null)
+{
+    <div class="row g-3 mb-3">
+        <div class="col-12 col-md-4">
+            <div class="card h-100"><div class="card-body">
+                <div class="resumen-etiqueta">Ingresos del mes</div>
+                <div class="resumen-valor text-success">@Moneda(datos.Ingresos)</div>
+            </div></div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card h-100"><div class="card-body">
+                <div class="resumen-etiqueta">Gastos del mes</div>
+                <div class="resumen-valor text-danger">@Moneda(datos.Gastos)</div>
+            </div></div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card h-100"><div class="card-body">
+                <div class="resumen-etiqueta">Diferencia</div>
+                <div class="resumen-valor @(datos.Diferencia >= 0 ? "text-success" : "text-danger")">@Moneda(datos.Diferencia)</div>
+            </div></div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-12 col-md-4">
+            <div class="card h-100"><div class="card-body">
+                <div class="resumen-etiqueta">Dinero propio (efectivo y débito)</div>
+                <div class="resumen-valor">@Moneda(datos.DineroPropio)</div>
+            </div></div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card h-100"><div class="card-body">
+                <div class="resumen-etiqueta">Crédito disponible</div>
+                <div class="resumen-valor">@Moneda(datos.CreditoDisponible)</div>
+                <div class="text-muted small">No es dinero propio</div>
+            </div></div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card h-100"><div class="card-body">
+                <div class="resumen-etiqueta">Deuda en tarjetas</div>
+                <div class="resumen-valor text-danger">@Moneda(datos.DeudaTarjetas)</div>
+                @if (datos.LimiteCreditoTotal > 0)
+                {
+                    <div class="text-muted small">de @Moneda(datos.LimiteCreditoTotal) de límite</div>
+                }
+            </div></div>
+        </div>
+    </div>
+
+    <div class="row g-3 mb-3">
+        <div class="col-12 col-lg-6">
+            <div class="card h-100"><div class="card-body">
+                <h2 class="seccion-titulo">Gastos por categoría</h2>
+                @if (datos.GastosPorCategoria.Count == 0)
+                {
+                    <div class="text-muted py-4 text-center">Sin gastos registrados en este mes.</div>
+                }
+                else
+                {
+                    <div class="dona-fila">
+                        <svg viewBox="0 0 42 42" class="dona" role="img" aria-label="Gastos por categoría">
+                            <circle cx="21" cy="21" r="15.9155" fill="none" stroke="#e9f1ee" stroke-width="6"></circle>
+                            @{ var acumulado = 0m; }
+                            @for (var i = 0; i < datos.GastosPorCategoria.Count; i++)
+                            {
+                                var g = datos.GastosPorCategoria[i];
+                                var porcentaje = datos.Gastos == 0 ? 0 : g.Monto / datos.Gastos * 100;
+                                <circle cx="21" cy="21" r="15.9155" fill="none" stroke="@Color(i)" stroke-width="6"
+                                        stroke-dasharray="@Num(porcentaje) @Num(100 - porcentaje)"
+                                        stroke-dashoffset="@Num(25 - acumulado)"></circle>
+                                acumulado += porcentaje;
+                            }
+                        </svg>
+                        <ul class="leyenda">
+                            @for (var i = 0; i < datos.GastosPorCategoria.Count; i++)
+                            {
+                                var g = datos.GastosPorCategoria[i];
+                                <li>
+                                    <span class="punto" style="background:@Color(i)"></span>
+                                    <span class="leyenda-nombre">@g.Nombre</span>
+                                    <span class="leyenda-valor">@Moneda(g.Monto) <small class="text-muted">@g.Porcentaje.ToString("0.#")%</small></span>
+                                </li>
+                            }
+                        </ul>
+                    </div>
+                }
+            </div></div>
+        </div>
+
+        <div class="col-12 col-lg-6">
+            <div class="card h-100"><div class="card-body">
+                <h2 class="seccion-titulo">Ingresos y gastos por mes</h2>
+                <div class="barras">
+                    @foreach (var m in datos.Meses)
+                    {
+                        var esActual = m == datos.Meses[^1];
+                        <div class="barras-mes @(esActual ? "actual" : null)">
+                            <div class="barras-par">
+                                <div class="barra ingreso" style="height:@Altura(m.Ingresos)%" title="Ingresos @Moneda(m.Ingresos)"></div>
+                                <div class="barra gasto" style="height:@Altura(m.Gastos)%" title="Gastos @Moneda(m.Gastos)"></div>
+                            </div>
+                            <div class="barras-etiqueta">@NombreMesCorto(m.Mes)</div>
+                        </div>
+                    }
+                </div>
+                <div class="d-flex gap-3 justify-content-center small text-muted mt-2">
+                    <span><span class="punto" style="background:var(--fz-verde)"></span> Ingresos</span>
+                    <span><span class="punto" style="background:#d9534f"></span> Gastos</span>
+                </div>
+                @if (Comparacion() is { } texto)
+                {
+                    <div class="comparacion mt-3">@texto</div>
+                }
+            </div></div>
+        </div>
+    </div>
+
+    <div class="card mb-3"><div class="card-body">
+        <h2 class="seccion-titulo">Salud financiera</h2>
+        <div class="row g-3">
+            @foreach (var ind in datos.Indicadores)
+            {
+                <div class="col-12 col-sm-6 col-xl-3">
+                    <div class="indicador nivel-@ind.Nivel">
+                        <div class="indicador-nombre">@ind.Nombre</div>
+                        <div class="indicador-valor">@ind.Valor</div>
+                        <div class="indicador-detalle">@ind.Detalle</div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div></div>
+}
+
+@if (movimientoAbierto)
+{
+    <MovimientoForm OnGuardado="Guardado" OnCancelado="() => movimientoAbierto = false" />
+}

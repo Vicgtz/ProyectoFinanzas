@@ -1,0 +1,198 @@
+@page "/cuentas/{Id:int}"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@using Finanzas.Models.Cuenta
+@using Finanzas.Models.Operacion
+
+<PageTitle>@(detalle?.Cuenta.Nombre ?? "Cuenta") - Finanzas</PageTitle>
+
+<div class="page-header">
+    <div>
+        <a href="cuentas" class="small text-decoration-none">&lsaquo; Cuentas</a>
+        <h1>@(detalle?.Cuenta.Nombre ?? "Cuenta")</h1>
+    </div>
+    @if (detalle != null)
+    {
+        <span class="badge @(detalle.Cuenta.Activa ? "bg-success" : "bg-secondary")">@(detalle.Cuenta.Activa ? "Activa" : "Inactiva")</span>
+    }
+</div>
+
+@if (!string.IsNullOrEmpty(error))
+{
+    <div class="alert alert-danger d-flex justify-content-between align-items-center" role="alert">
+        <span>@error</span>
+        <button class="btn btn-sm btn-outline-danger" @onclick="Cargar">Reintentar</button>
+    </div>
+}
+
+@if (cargando && detalle == null)
+{
+    <div class="text-center py-5">
+        <div class="spinner-border" role="status"><span class="visually-hidden">Cargando...</span></div>
+    </div>
+}
+else if (detalle != null)
+{
+    var c = detalle.Cuenta;
+    <div class="row g-3 mb-3">
+        @if (EsCredito)
+        {
+            <div class="col-6 col-lg-3">
+                <div class="card h-100"><div class="card-body">
+                    <div class="resumen-etiqueta">Deuda utilizada</div>
+                    <div class="resumen-valor text-danger">@Moneda(c.Saldo)</div>
+                </div></div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="card h-100"><div class="card-body">
+                    <div class="resumen-etiqueta">Crédito disponible</div>
+                    <div class="resumen-valor">@Moneda(detalle.Disponible ?? 0)</div>
+                </div></div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="card h-100"><div class="card-body">
+                    <div class="resumen-etiqueta">Límite de crédito</div>
+                    <div class="resumen-valor">@Moneda(c.LimiteCredito ?? 0)</div>
+                    <div class="progress mt-2" role="progressbar" aria-label="Uso del crédito" style="height:6px">
+                        <div class="progress-bar @(UsoCredito > 60 ? "bg-danger" : UsoCredito > 30 ? "bg-warning" : "bg-success")" style="width:@UsoCreditoCss%"></div>
+                    </div>
+                    <div class="small text-muted mt-1">@UsoCredito.ToString("0.#")% utilizado</div>
+                </div></div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="card h-100"><div class="card-body">
+                    <div class="resumen-etiqueta">Consumo del periodo</div>
+                    <div class="resumen-valor">@Moneda(detalle.ConsumoPeriodoActual)</div>
+                    <div class="small text-muted">desde el corte del @detalle.UltimoCorte?.ToString("dd/MM/yyyy")</div>
+                </div></div>
+            </div>
+        }
+        else
+        {
+            <div class="col-12 col-md-6">
+                <div class="card h-100"><div class="card-body">
+                    <div class="resumen-etiqueta">Saldo</div>
+                    <div class="resumen-valor text-success">@Moneda(c.Saldo)</div>
+                    <div class="small text-muted">@(c.TipoCuenta == TipoCuentaItem.Efectivo ? "Efectivo" : "Débito")</div>
+                </div></div>
+            </div>
+        }
+    </div>
+
+    @if (EsCredito)
+    {
+        <div class="card mb-3"><div class="card-body">
+            <div class="d-flex flex-wrap justify-content-between align-items-start gap-2 mb-2">
+                <div>
+                    <h2 class="seccion-titulo mb-1">Cortes de la tarjeta</h2>
+                    <div class="small text-muted">
+                        Día de corte: @c.DiaCorte · Próximo corte: @detalle.ProximoCorte?.ToString("dd/MM/yyyy") (@(detalle.DiasParaCorte == 1 ? "mañana" : $"en {detalle.DiasParaCorte} días")).
+                        Lo comprado el día del corte cuenta en el periodo siguiente.
+                    </div>
+                </div>
+                @if (detalle.CortePendiente)
+                {
+                <button class="btn btn-primary btn-sm" @onclick="RegistrarCorte" disabled="@registrando">
+                    @if (registrando)
+                    {
+                        <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+                    }
+                    Registrar corte del @detalle.UltimoCorte?.ToString("dd/MM/yyyy")
+                </button>
+                }
+            </div>
+
+            @if (detalle.CortePendiente)
+            {
+                <div class="alert alert-warning py-2 small">El corte del @detalle.UltimoCorte?.ToString("dd/MM/yyyy") aún no está registrado en el historial.</div>
+            }
+            @if (!string.IsNullOrEmpty(errorCorte))
+            {
+                <div class="alert alert-danger py-2 small">@errorCorte</div>
+            }
+
+            @if (detalle.Cortes.Count == 0)
+            {
+                <div class="text-muted text-center py-3">Todavía no hay cortes registrados.</div>
+            }
+            else
+            {
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0 table-cards">
+                        <thead>
+                            <tr>
+                                <th>Fecha de corte</th>
+                                <th class="text-end">Deuda al corte</th>
+                                <th class="text-end">Disponible al corte</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var corte in detalle.Cortes)
+                            {
+                                <tr>
+                                    <td class="fw-semibold">@corte.FechaCorte.ToString("dd/MM/yyyy")</td>
+                                    <td class="text-end" data-label="Deuda al corte">@Moneda(corte.DeudaAlCorte)</td>
+                                    <td class="text-end" data-label="Disponible">@Moneda(corte.CreditoDisponibleAlCorte)</td>
+                                    <td class="text-end acciones">
+                                        <button class="btn btn-sm btn-outline-danger" @onclick="() => EliminarCorte(corte)">Eliminar</button>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+        </div></div>
+    }
+
+    <div class="d-flex justify-content-between align-items-center mb-2">
+        <h2 class="seccion-titulo mb-0">Movimientos de la cuenta</h2>
+        <button class="btn btn-sm btn-outline-primary" @onclick="() => movimientoAbierto = true">+ Movimiento</button>
+    </div>
+
+    @if (operaciones.Count == 0)
+    {
+        <div class="text-center text-muted py-4">Esta cuenta aún no tiene movimientos.</div>
+    }
+    else
+    {
+        <div class="table-responsive">
+            <table class="table table-hover align-middle bg-white table-cards">
+                <thead>
+                    <tr>
+                        <th>Fecha</th>
+                        <th>Descripción</th>
+                        <th>Tipo</th>
+                        <th>Categoría</th>
+                        <th class="text-end">@(EsCredito ? "Efecto en la deuda" : "Efecto en el saldo")</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var o in operaciones)
+                    {
+                        var importe = Importe(o);
+                        <tr>
+                            <td class="text-nowrap" data-label="Fecha">@o.Fecha.ToString("dd/MM/yyyy")</td>
+                            <td class="fw-semibold">@(string.IsNullOrWhiteSpace(o.Descripcion) ? "—" : o.Descripcion)@if (o.Msi != null) {<span class="badge bg-info text-dark ms-1">@o.Msi.NumeroMeses MSI</span>}@if (o.PersonaNombre != null) {<span class="small text-muted fw-normal ms-1">· @o.PersonaNombre</span>}</td>
+                            <td data-label="Tipo">@TipoOperacionTexto.Nombre(o.TipoOperacion)</td>
+                            <td data-label="Categoría">@(o.CategoriaNombre ?? "—")</td>
+                            <td class="text-end text-nowrap @ClaseImporte(importe)" data-label="Efecto">@(importe > 0 ? "+" : "")@Moneda(importe)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+
+        @if (hayMas)
+        {
+            <div class="text-center my-3">
+                <button class="btn btn-outline-primary" @onclick="CargarMas" disabled="@cargandoMas">Cargar más</button>
+            </div>
+        }
+    }
+}
+
+@if (movimientoAbierto)
+{
+    <MovimientoForm OnGuardado="Guardado" OnCancelado="() => movimientoAbierto = false" />
+}

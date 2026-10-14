@@ -41,6 +41,8 @@ else
             <thead>
                 <tr>
                     <th>Nombre</th>
+                    <th class="text-end">Te debe</th>
+                    <th class="text-end">Le debes</th>
                     <th>Estado</th>
                     <th></th>
                 </tr>
@@ -49,11 +51,14 @@ else
                 @foreach (var p in PersonasVisibles)
                 {
                     <tr class="@(p.Activa ? null : "text-muted")">
-                        <td class="fw-semibold">@p.Nombre</td>
+                        <td class="fw-semibold"><a href="personas/@p.Id" class="text-decoration-none">@p.Nombre</a></td>
+                        <td class="text-end @(p.PorCobrar > 0 ? "text-success" : null)" data-label="Te debe">@Moneda(p.PorCobrar)</td>
+                        <td class="text-end @(p.PorPagar > 0 ? "text-danger" : null)" data-label="Le debes">@Moneda(p.PorPagar)</td>
                         <td data-label="Estado">
                             <span class="badge @(p.Activa ? "bg-success" : "bg-secondary")">@(p.Activa ? "Activa" : "Inactiva")</span>
                         </td>
                         <td class="text-end text-nowrap acciones">
+                            <a class="btn btn-sm btn-outline-primary me-1" href="personas/@p.Id">Detalle</a>
                             <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => Editar(p)">Editar</button>
                             <button class="btn btn-sm btn-outline-secondary" @onclick="() => CambiarEstado(p)">@(p.Activa ? "Desactivar" : "Activar")</button>
                         </td>
