@@ -30,6 +30,7 @@ public partial class Movimientos
 
     private bool formAbierto;
     private OperacionModel? enEdicion;
+    private bool copiando;
 
     private OperacionModel? aEliminar;
     private bool eliminando;
@@ -92,12 +93,21 @@ public partial class Movimientos
     private void Nuevo()
     {
         enEdicion = null;
+        copiando = false;
         formAbierto = true;
     }
 
     private void Editar(OperacionModel operacion)
     {
         enEdicion = operacion;
+        copiando = false;
+        formAbierto = true;
+    }
+
+    private void Copiar(OperacionModel operacion)
+    {
+        enEdicion = operacion;
+        copiando = true;
         formAbierto = true;
     }
 
@@ -168,5 +178,5 @@ public partial class Movimientos
         _ => Moneda(o.Monto)
     };
 
-    private static string Moneda(decimal valor) => $"${valor:N2}";
+    private static string Moneda(decimal valor) => Formato.Moneda(valor);
 }

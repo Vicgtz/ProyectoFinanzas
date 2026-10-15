@@ -134,7 +134,7 @@ else if (detalle != null)
                                     <td class="text-end" data-label="Deuda al corte">@Moneda(corte.DeudaAlCorte)</td>
                                     <td class="text-end" data-label="Disponible">@Moneda(corte.CreditoDisponibleAlCorte)</td>
                                     <td class="text-end acciones">
-                                        <button class="btn btn-sm btn-outline-danger" @onclick="() => EliminarCorte(corte)">Eliminar</button>
+                                        <button class="btn btn-sm btn-outline-danger" @onclick="() => EliminarCorte(corte)" title="Eliminar" aria-label="Eliminar"><IconoAccion Nombre="eliminar" /></button>
                                     </td>
                                 </tr>
                             }

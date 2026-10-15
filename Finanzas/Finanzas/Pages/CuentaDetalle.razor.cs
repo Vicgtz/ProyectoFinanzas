@@ -127,6 +127,5 @@ public partial class CuentaDetalle
     // En tarjetas el saldo es deuda: subir es malo y bajar es bueno; en las demás cuentas es al revés.
     private string ClaseImporte(decimal importe) => importe == 0 ? "" : (importe > 0) == !EsCredito ? "text-success" : "text-danger";
 
-    private static string Moneda(decimal valor) =>
-        valor < 0 ? $"-${Math.Abs(valor):N2}" : $"${valor:N2}";
+    private static string Moneda(decimal valor) => Formato.Moneda(valor);
 }

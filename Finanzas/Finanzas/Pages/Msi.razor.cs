@@ -50,5 +50,5 @@ public partial class Msi
     private static string Corto(decimal valor) =>
         valor >= 1000 ? $"{valor / 1000:0.#}k" : valor.ToString("0");
 
-    private static string Moneda(decimal valor) => $"${valor:N2}";
+    private static string Moneda(decimal valor) => Formato.Moneda(valor);
 }

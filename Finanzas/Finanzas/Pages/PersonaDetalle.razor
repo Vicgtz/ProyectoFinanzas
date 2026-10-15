@@ -92,8 +92,8 @@ else if (persona != null)
                             <td data-label="Cuenta">@string.Join(", ", o.Movimientos.Select(m => m.CuentaNombre))</td>
                             <td class="text-end text-nowrap" data-label="Monto">@Signo(o)@Moneda(o.Monto)</td>
                             <td class="text-end text-nowrap acciones">
-                                <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => Editar(o)">Editar</button>
-                                <button class="btn btn-sm btn-outline-danger" @onclick="() => PedirEliminar(o)">Eliminar</button>
+                                <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => Editar(o)" title="Editar" aria-label="Editar"><IconoAccion Nombre="editar" /></button>
+                                <button class="btn btn-sm btn-outline-danger" @onclick="() => PedirEliminar(o)" title="Eliminar" aria-label="Eliminar"><IconoAccion Nombre="eliminar" /></button>
                             </td>
                         </tr>
                     }

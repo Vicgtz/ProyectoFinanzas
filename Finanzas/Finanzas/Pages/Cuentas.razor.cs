@@ -123,14 +123,14 @@ public partial class Cuentas
     private string? Validar()
     {
         if (string.IsNullOrWhiteSpace(form.Nombre)) return "Ingresa el nombre de la cuenta";
-        if (!editando && form.Saldo < 0) return "El saldo no puede ser negativo";
+        if (form.Saldo < 0) return "El saldo no puede ser negativo";
 
         if (form.TipoCuenta == TipoCuentaItem.Credito)
         {
             if (form.LimiteCredito is null or < 0) return "Ingresa un límite de crédito válido";
             if (diaCorte is null or < 1 or > 31) return "El día de corte debe estar entre 1 y 31";
             form.DiaCorte = (byte)diaCorte;
-            if (!editando && form.Saldo > form.LimiteCredito) return "La deuda inicial no puede superar el límite";
+            if (form.Saldo > form.LimiteCredito) return "La deuda no puede superar el límite";
         }
         else
         {
@@ -145,6 +145,5 @@ public partial class Cuentas
     private static string NombreTipo(string clave) =>
         Tipos.FirstOrDefault(t => t.Clave == clave)?.Descripcion ?? clave;
 
-    private static string Moneda(decimal valor) =>
-        valor < 0 ? $"-${Math.Abs(valor):N2}" : $"${valor:N2}";
+    private static string Moneda(decimal valor) => Formato.Moneda(valor);
 }

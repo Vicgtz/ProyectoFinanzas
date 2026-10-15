@@ -54,7 +54,7 @@ public class CuentaService(FinanzasDbContext context)
         return new BaseResponse { Success = true, Message = "Guardado", Id = nueva.Id };
     }
 
-    // El saldo no se edita aquí: debe cambiar solo mediante movimientos.
+    // El saldo (o deuda) puede corregirse manualmente; Validar ya revisa que no supere el límite.
     public async Task<BaseResponse> Edit(int idUsuario, CuentaModel cuenta)
     {
         var check = Validar(cuenta);
@@ -65,8 +65,6 @@ public class CuentaService(FinanzasDbContext context)
 
         if (actual.TipoCuenta != cuenta.TipoCuenta)
             return new BaseResponse { Message = "No se puede cambiar el tipo de cuenta" };
-        if (actual.TipoCuenta == TipoCuentaItem.Credito && cuenta.LimiteCredito < actual.Saldo)
-            return new BaseResponse { Message = "El límite de crédito no puede ser menor al saldo actual" };
 
         var nombre = cuenta.Nombre.Trim();
         var duplicada = await context.Cuentas.AnyAsync(a => a.Id != actual.Id && a.UsuarioId == idUsuario && a.Nombre == nombre && a.TipoCuenta == actual.TipoCuenta);
@@ -74,6 +72,7 @@ public class CuentaService(FinanzasDbContext context)
 
         actual.Nombre = nombre;
         actual.Activa = cuenta.Activa;
+        actual.Saldo = cuenta.Saldo;
         actual.LimiteCredito = cuenta.LimiteCredito;
         actual.DiaCorte = cuenta.DiaCorte;
 

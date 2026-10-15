@@ -1,3 +1,4 @@
+using System.Globalization;
 using System.Text.Json;
 using Blazored.LocalStorage;
 using Finanzas;
@@ -9,6 +10,11 @@ using Microsoft.AspNetCore.Components.WebAssembly.Hosting;
 var builder = WebAssemblyHostBuilder.CreateDefault(args);
 builder.RootComponents.Add<App>("#app");
 builder.RootComponents.Add<HeadOutlet>("head::after");
+
+CultureInfo.DefaultThreadCurrentCulture = Formato.Mexico;
+CultureInfo.DefaultThreadCurrentUICulture = Formato.Mexico;
+CultureInfo.CurrentCulture = Formato.Mexico;
+CultureInfo.CurrentUICulture = Formato.Mexico;
 
 var apiUrl = builder.Configuration["ApiSettings:BaseUrl"]
     ?? throw new Exception("Falta ApiSettings:BaseUrl en wwwroot/appsettings.json");

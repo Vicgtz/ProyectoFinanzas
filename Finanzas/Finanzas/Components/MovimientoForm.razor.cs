@@ -10,6 +10,8 @@ public partial class MovimientoForm
 {
     // Operación a editar; null para crear una nueva.
     [Parameter] public OperacionModel? Operacion { get; set; }
+    // Con Operacion informada, precarga sus datos pero guarda un movimiento nuevo (fecha de hoy).
+    [Parameter] public bool Copiar { get; set; }
     // Tipo y persona con los que se abre el formulario al crear (por ejemplo, desde el detalle de una persona).
     [Parameter] public string? TipoInicial { get; set; }
     [Parameter] public int? PersonaIdInicial { get; set; }
@@ -43,6 +45,7 @@ public partial class MovimientoForm
 
     private static readonly int[] MesesComunes = [3, 6, 9, 12, 15, 18, 24, 36];
 
+    private bool EsEdicion => Operacion != null && !Copiar;
     private bool OrigenEsCredito => cuentas.Any(c => c.Id == form.CuentaOrigenId && EsCredito(c));
     private bool PermiteMsi => form.TipoOperacion == TipoOperacion.Gasto && OrigenEsCredito;
     private IEnumerable<int> OpcionesMeses => MesesComunes.Contains(mesesMsi) ? MesesComunes : MesesComunes.Append(mesesMsi).Order();
@@ -83,6 +86,11 @@ public partial class MovimientoForm
         if (Operacion != null)
         {
             CargarOperacion(Operacion);
+            if (Copiar)
+            {
+                form.Id = 0;
+                fecha = DateTime.Today;
+            }
         }
         else
         {
@@ -146,7 +154,7 @@ public partial class MovimientoForm
         if (errorForm != null) return;
 
         // Se conserva la hora original al editar el mismo día; si no, la hora actual (sin pasar de "ahora").
-        var hora = Operacion != null && Operacion.Fecha.Date == fecha!.Value.Date ? Operacion.Fecha.TimeOfDay : DateTime.Now.TimeOfDay;
+        var hora = EsEdicion && Operacion!.Fecha.Date == fecha!.Value.Date ? Operacion.Fecha.TimeOfDay : DateTime.Now.TimeOfDay;
         form.Fecha = fecha!.Value.Date.Add(hora);
         if (form.Fecha > DateTime.Now) form.Fecha = DateTime.Now;
         if (!PideOrigen) form.CuentaOrigenId = null;
@@ -156,7 +164,7 @@ public partial class MovimientoForm
         form.NumeroMeses = PermiteMsi && esMsi ? mesesMsi : null;
 
         guardando = true;
-        var respuesta = Operacion == null ? await OperacionApi.Save(form) : await OperacionApi.Edit(form);
+        var respuesta = EsEdicion ? await OperacionApi.Edit(form) : await OperacionApi.Save(form);
         guardando = false;
 
         if (!respuesta.Success)

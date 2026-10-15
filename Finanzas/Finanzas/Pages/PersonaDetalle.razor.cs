@@ -125,5 +125,5 @@ public partial class PersonaDetalle
     private static string Signo(OperacionModel o) =>
         o.TipoOperacion is TipoOperacion.DeudaAdquirida or TipoOperacion.CobroPrestamo ? "+" : "-";
 
-    private static string Moneda(decimal valor) => $"${valor:N2}";
+    private static string Moneda(decimal valor) => Formato.Moneda(valor);
 }

@@ -91,6 +91,5 @@ public partial class Home
     private static string NombreMesCorto(int mes) =>
         Cultura.TextInfo.ToTitleCase(new DateTime(2000, mes, 1).ToString("MMM", Cultura).TrimEnd('.'));
 
-    private static string Moneda(decimal valor) =>
-        valor < 0 ? $"-${Math.Abs(valor):N2}" : $"${valor:N2}";
+    private static string Moneda(decimal valor) => Formato.Moneda(valor);
 }

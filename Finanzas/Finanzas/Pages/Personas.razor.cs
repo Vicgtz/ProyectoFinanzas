@@ -97,5 +97,5 @@ public partial class Personas
         await Cargar();
     }
 
-    private static string Moneda(decimal valor) => $"${valor:N2}";
+    private static string Moneda(decimal valor) => Formato.Moneda(valor);
 }

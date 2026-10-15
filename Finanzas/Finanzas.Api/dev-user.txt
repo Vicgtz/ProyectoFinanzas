@@ -1,3 +1,4 @@
 Usuario de prueba (solo desarrollo local)
 Correo: prueba@finanzas.local
 Contra: Dev-8d5cac6eaa
+Contra2: Dev-98888f09f5

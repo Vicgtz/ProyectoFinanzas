@@ -58,9 +58,9 @@ else
                             <span class="badge @(p.Activa ? "bg-success" : "bg-secondary")">@(p.Activa ? "Activa" : "Inactiva")</span>
                         </td>
                         <td class="text-end text-nowrap acciones">
-                            <a class="btn btn-sm btn-outline-primary me-1" href="personas/@p.Id">Detalle</a>
-                            <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => Editar(p)">Editar</button>
-                            <button class="btn btn-sm btn-outline-secondary" @onclick="() => CambiarEstado(p)">@(p.Activa ? "Desactivar" : "Activar")</button>
+                            <a class="btn btn-sm btn-outline-primary me-1" href="personas/@p.Id" title="Detalle" aria-label="Detalle"><IconoAccion Nombre="detalle" /></a>
+                            <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => Editar(p)" title="Editar" aria-label="Editar"><IconoAccion Nombre="editar" /></button>
+                            <button class="btn btn-sm btn-outline-secondary" @onclick="() => CambiarEstado(p)" title="@(p.Activa ? "Desactivar" : "Activar")" aria-label="@(p.Activa ? "Desactivar" : "Activar")"><IconoAccion Nombre="estado" /></button>
                         </td>
                     </tr>
                 }

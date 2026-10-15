@@ -102,8 +102,9 @@ else
                         <td data-label="Cuenta">@Cuentas(o)</td>
                         <td class="text-end text-nowrap @ClaseMonto(o.TipoOperacion)" data-label="Monto">@Monto(o)</td>
                         <td class="text-end text-nowrap acciones">
-                            <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => Editar(o)">Editar</button>
-                            <button class="btn btn-sm btn-outline-danger" @onclick="() => PedirEliminar(o)">Eliminar</button>
+                            <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => Copiar(o)" title="Copiar" aria-label="Copiar"><IconoAccion Nombre="copiar" /></button>
+                            <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => Editar(o)" title="Editar" aria-label="Editar"><IconoAccion Nombre="editar" /></button>
+                            <button class="btn btn-sm btn-outline-danger" @onclick="() => PedirEliminar(o)" title="Eliminar" aria-label="Eliminar"><IconoAccion Nombre="eliminar" /></button>
                         </td>
                     </tr>
                 }
@@ -127,7 +128,7 @@ else
 
 @if (formAbierto)
 {
-    <MovimientoForm Operacion="enEdicion" OnGuardado="Guardado" OnCancelado="CerrarForm" />
+    <MovimientoForm Operacion="enEdicion" Copiar="copiando" OnGuardado="Guardado" OnCancelado="CerrarForm" />
 }
 
 @if (aEliminar != null)

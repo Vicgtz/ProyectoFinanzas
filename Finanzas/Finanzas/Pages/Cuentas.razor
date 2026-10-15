@@ -89,9 +89,9 @@ else
                             <span class="badge @(c.Activa ? "bg-success" : "bg-secondary")">@(c.Activa ? "Activa" : "Inactiva")</span>
                         </td>
                         <td class="text-end text-nowrap acciones">
-                            <a class="btn btn-sm btn-outline-primary me-1" href="cuentas/@c.Id">Detalle</a>
-                            <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => Editar(c)">Editar</button>
-                            <button class="btn btn-sm btn-outline-secondary" @onclick="() => CambiarEstado(c)">@(c.Activa ? "Desactivar" : "Activar")</button>
+                            <a class="btn btn-sm btn-outline-primary me-1" href="cuentas/@c.Id" title="Detalle" aria-label="Detalle"><IconoAccion Nombre="detalle" /></a>
+                            <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => Editar(c)" title="Editar" aria-label="Editar"><IconoAccion Nombre="editar" /></button>
+                            <button class="btn btn-sm btn-outline-secondary" @onclick="() => CambiarEstado(c)" title="@(c.Activa ? "Desactivar" : "Activar")" aria-label="@(c.Activa ? "Desactivar" : "Activar")"><IconoAccion Nombre="estado" /></button>
                         </td>
                     </tr>
                 }
@@ -127,13 +127,10 @@ else
                             </InputSelect>
                         </div>
 
-                        @if (!editando)
-                        {
-                            <div class="mb-3">
-                                <label class="form-label" for="saldo">@(form.TipoCuenta == "C" ? "Deuda inicial" : "Saldo inicial")</label>
-                                <InputNumber id="saldo" class="form-control" @bind-Value="form.Saldo" disabled="@guardando" />
-                            </div>
-                        }
+                        <div class="mb-3">
+                            <label class="form-label" for="saldo">@(form.TipoCuenta == "C" ? (editando ? "Deuda" : "Deuda inicial") : (editando ? "Saldo" : "Saldo inicial"))</label>
+                            <InputNumber id="saldo" class="form-control" @bind-Value="form.Saldo" disabled="@guardando" />
+                        </div>
 
                         @if (form.TipoCuenta == "C")
                         {

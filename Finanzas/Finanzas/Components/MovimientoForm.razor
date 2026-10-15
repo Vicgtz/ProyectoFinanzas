@@ -10,7 +10,7 @@
         <div class="modal-content">
             <EditForm Model="form" OnSubmit="Guardar">
                 <div class="modal-header">
-                    <h5 class="modal-title">@(Operacion == null ? "Nuevo movimiento" : "Editar movimiento")</h5>
+                    <h5 class="modal-title">@(EsEdicion ? "Editar movimiento" : "Nuevo movimiento")</h5>
                     <button type="button" class="btn-close" aria-label="Cerrar" @onclick="Cancelar" disabled="@guardando"></button>
                 </div>
                 <div class="modal-body">
@@ -22,7 +22,7 @@
                     {
                         <div class="mb-3">
                             <label class="form-label" for="mov-tipo">Tipo</label>
-                            <InputSelect id="mov-tipo" class="form-select" Value="form.TipoOperacion" ValueChanged="@((string t) => CambiarTipo(t))" ValueExpression="@(() => form.TipoOperacion)" disabled="@(guardando || Operacion != null)">
+                            <InputSelect id="mov-tipo" class="form-select" Value="form.TipoOperacion" ValueChanged="@((string t) => CambiarTipo(t))" ValueExpression="@(() => form.TipoOperacion)" disabled="@(guardando || EsEdicion)">
                                 @foreach (var t in Tipos)
                                 {
                                     <option value="@t.Clave">@t.Texto</option>
@@ -104,7 +104,7 @@
                                         <div class="col-6 small text-muted">
                                             @if (form.Monto > 0)
                                             {
-                                                <span>≈ $@((form.Monto / mesesMsi).ToString("N2")) al mes</span>
+                                                <span>≈ @Finanzas.Services.Formato.Moneda(form.Monto / mesesMsi) al mes</span>
                                             }
                                         </div>
                                     </div>
