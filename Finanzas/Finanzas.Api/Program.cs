@@ -53,6 +53,7 @@ builder.Services.AddScoped<Finanzas.Api.Services.OperacionService>();
 builder.Services.AddScoped<Finanzas.Api.Services.DashboardService>();
 builder.Services.AddScoped<Finanzas.Api.Services.CuentaDetalleService>();
 builder.Services.AddScoped<Finanzas.Api.Services.MsiService>();
+builder.Services.AddScoped<Finanzas.Api.Services.AnalisisService>();
 
 builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi

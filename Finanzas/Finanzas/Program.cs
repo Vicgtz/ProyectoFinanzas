@@ -37,5 +37,6 @@ builder.Services.AddScoped<PersonaService>();
 builder.Services.AddScoped<OperacionService>();
 builder.Services.AddScoped<DashboardService>();
 builder.Services.AddScoped<MsiService>();
+builder.Services.AddScoped<AnalisisService>();
 
 await builder.Build().RunAsync();

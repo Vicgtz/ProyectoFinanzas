@@ -1,0 +1,254 @@
+@page "/analisis"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@using Finanzas.Models.Analisis
+
+<PageTitle>Análisis - Finanzas</PageTitle>
+
+<div class="page-header">
+    <div>
+        <h1>Análisis financiero</h1>
+        <div class="text-muted small">Últimos 12 meses. Solo cuentan ingresos y gastos; transferencias, pagos de tarjeta y préstamos quedan fuera.</div>
+    </div>
+</div>
+
+@if (!string.IsNullOrEmpty(error))
+{
+    <div class="alert alert-danger d-flex justify-content-between align-items-center" role="alert">
+        <span>@error</span>
+        <button class="btn btn-sm btn-outline-danger" @onclick="Cargar">Reintentar</button>
+    </div>
+}
+
+@if (cargando)
+{
+    <div class="text-center py-5">
+        <div class="spinner-border" role="status"><span class="visually-hidden">Cargando...</span></div>
+    </div>
+}
+else if (datos != null)
+{
+    <div class="row g-2 mb-3">
+        @foreach (var a in datos.Alertas)
+        {
+            <div class="col-12 col-lg-6">
+                <div class="alerta-fila nivel-@a.Nivel">
+                    <div class="alerta-titulo">@a.Titulo</div>
+                    <div class="alerta-detalle">@a.Detalle</div>
+                </div>
+            </div>
+        }
+    </div>
+
+    <div class="card mb-3"><div class="card-body">
+        <h2 class="seccion-titulo">Gasto por mes: esencial y no esencial</h2>
+        <div class="analisis-barras">
+            @foreach (var m in MesesVisibles)
+            {
+                <div class="analisis-mes @(m.GastaMasQueIngresa ? "deficit" : null)" title="@NombreMes(m.Mes, m.Anio): ingresos @Moneda(m.Ingresos), gastos @Moneda(m.Gastos)">
+                    <div class="analisis-par">
+                        <div class="analisis-ingreso" style="height:@Altura(m.Ingresos)%"></div>
+                        <div class="analisis-gasto" style="height:@Altura(m.Gastos)%">
+                            <div class="seg otros" style="flex-grow:@Num(m.Otros)"></div>
+                            <div class="seg no-esencial" style="flex-grow:@Num(m.NoEsencial)"></div>
+                            <div class="seg esencial" style="flex-grow:@Num(m.Esencial)"></div>
+                        </div>
+                    </div>
+                    <div class="analisis-etiqueta">@NombreMesCorto(m.Mes)</div>
+                </div>
+            }
+        </div>
+        <div class="d-flex flex-wrap gap-3 justify-content-center small text-muted mt-3">
+            <span><span class="punto" style="background:var(--fz-borde)"></span> Ingresos</span>
+            <span><span class="punto" style="background:var(--fz-verde)"></span> Esencial</span>
+            <span><span class="punto" style="background:var(--fz-acento)"></span> No esencial</span>
+            <span><span class="punto" style="background:#9aa8a3"></span> Otros / sin categoría</span>
+        </div>
+    </div></div>
+
+    <div class="table-responsive mb-3">
+        <table class="table align-middle bg-white table-cards">
+            <thead>
+                <tr>
+                    <th>Mes</th>
+                    <th class="text-end">Ingresos</th>
+                    <th class="text-end">Gastos</th>
+                    <th class="text-end">Diferencia</th>
+                    <th class="text-end">Vs. mes anterior</th>
+                    <th class="text-end">No esencial</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var m in MesesVisibles.AsEnumerable().Reverse())
+                {
+                    <tr>
+                        <td class="fw-semibold">@NombreMes(m.Mes, m.Anio)</td>
+                        <td class="text-end" data-label="Ingresos">@Moneda(m.Ingresos)</td>
+                        <td class="text-end" data-label="Gastos">@Moneda(m.Gastos)</td>
+                        <td class="text-end @(m.Diferencia < 0 ? "text-danger" : "text-success")" data-label="Diferencia">@Moneda(m.Diferencia)</td>
+                        <td class="text-end" data-label="Vs. mes anterior">
+                            @if (m.VariacionGastos is { } v)
+                            {
+                                <span class="@(v > 0 ? "text-danger" : "text-success")">@(v > 0 ? "+" : "")@v.ToString("0.#")%</span>
+                            }
+                            else
+                            {
+                                <span class="text-muted">—</span>
+                            }
+                        </td>
+                        <td class="text-end" data-label="No esencial">@(m.Gastos == 0 ? "—" : $"{m.NoEsencial / m.Gastos * 100:0.#}%")</td>
+                        <td class="text-end">
+                            @if (m.GastaMasQueIngresa)
+                            {
+                                <span class="badge bg-danger">Déficit</span>
+                            }
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <div class="card mb-3"><div class="card-body">
+        <h2 class="seccion-titulo">Categorías que subieron este mes</h2>
+        @if (datos.CategoriasEnAumento.Count == 0)
+        {
+            <div class="text-muted">Ninguna categoría supera lo gastado el mes pasado.</div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table align-middle mb-0 table-cards">
+                    <thead>
+                        <tr>
+                            <th>Categoría</th>
+                            <th>Tipo</th>
+                            <th class="text-end">Mes pasado</th>
+                            <th class="text-end">Este mes</th>
+                            <th class="text-end">Aumento</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var c in datos.CategoriasEnAumento)
+                        {
+                            <tr>
+                                <td class="fw-semibold">@c.Nombre</td>
+                                <td data-label="Tipo"><span class="badge @(c.Clasificacion == "N" ? "bg-warning text-dark" : c.Clasificacion == "E" ? "bg-success" : "bg-secondary")">@NombreClasificacion(c.Clasificacion)</span></td>
+                                <td class="text-end" data-label="Mes pasado">@Moneda(c.Anterior)</td>
+                                <td class="text-end" data-label="Este mes">@Moneda(c.Actual)</td>
+                                <td class="text-end text-danger" data-label="Aumento">+@Moneda(c.Aumento)</td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        }
+    </div></div>
+}
+
+<div class="card mb-3"><div class="card-body">
+    <h2 class="seccion-titulo">¿Puedo hacer una compra grande?</h2>
+    <div class="text-muted small mb-3">Simula una compra al contado o a meses sin intereses y mira su efecto en tu colchón y en tu flujo de los próximos meses.</div>
+
+    <div class="row g-2 align-items-end mb-3">
+        <div class="col-12 col-sm-5 col-md-4">
+            <label class="form-label small mb-1" for="imp-monto">Monto de la compra</label>
+            <input id="imp-monto" type="number" min="0" step="any" class="form-control" @bind="monto" @bind:event="oninput" />
+        </div>
+        <div class="col-7 col-sm-4 col-md-3">
+            <label class="form-label small mb-1" for="imp-meses">Forma de pago</label>
+            <select id="imp-meses" class="form-select" @bind="mesesCompra">
+                <option value="1">Al contado</option>
+                @foreach (var m in new[] { 3, 6, 9, 12, 18, 24 })
+                {
+                    <option value="@m">@m meses sin intereses</option>
+                }
+            </select>
+        </div>
+        <div class="col-5 col-sm-3 col-md-2">
+            <button class="btn btn-primary w-100" @onclick="Simular" disabled="@simulando">
+                @if (simulando)
+                {
+                    <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+                }
+                Calcular
+            </button>
+        </div>
+    </div>
+
+    @if (!string.IsNullOrEmpty(errorImpacto))
+    {
+        <div class="alert alert-danger py-2" role="alert">@errorImpacto</div>
+    }
+
+    @if (impacto != null)
+    {
+        <div class="alerta-fila nivel-@impacto.Veredicto mb-3">
+            <div class="alerta-titulo">@TituloVeredicto(impacto.Veredicto)</div>
+            <div class="alerta-detalle">@impacto.Resumen</div>
+        </div>
+
+        <div class="row g-3 mb-3">
+            <div class="col-6 col-lg-3">
+                <div class="mini-dato">
+                    <div class="resumen-etiqueta">@(impacto.Meses == 1 ? "Dinero propio después" : "Mensualidad")</div>
+                    <div class="fw-semibold fs-5">@Moneda(impacto.Meses == 1 ? impacto.DineroPropioDespues : impacto.Mensualidad)</div>
+                    @if (impacto.Meses == 1)
+                    {
+                        <div class="small text-muted">Hoy tienes @Moneda(impacto.DineroPropioActual)</div>
+                    }
+                    else
+                    {
+                        <div class="small text-muted">durante @impacto.Meses meses</div>
+                    }
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="mini-dato">
+                    <div class="resumen-etiqueta">Colchón de gasto</div>
+                    <div class="fw-semibold fs-5">@Colchon(impacto.ColchonAntes) → @Colchon(impacto.ColchonDespues)</div>
+                    <div class="small text-muted">meses de gasto cubiertos</div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="mini-dato">
+                    <div class="resumen-etiqueta">Ingreso promedio</div>
+                    <div class="fw-semibold fs-5">@Moneda(impacto.IngresoPromedio)</div>
+                    <div class="small text-muted">gasto normal @Moneda(impacto.GastoPromedio)</div>
+                </div>
+            </div>
+            <div class="col-6 col-lg-3">
+                <div class="mini-dato">
+                    <div class="resumen-etiqueta">Crédito disponible</div>
+                    <div class="fw-semibold fs-5">@Moneda(impacto.LimiteCreditoDisponible)</div>
+                    <div class="small @(impacto.CabeEnCredito ? "text-muted" : "text-danger")">@(impacto.Meses == 1 ? "no se usa al contado" : impacto.CabeEnCredito ? "alcanza para la compra" : "no alcanza")</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="table-responsive">
+            <table class="table align-middle mb-0 table-cards">
+                <thead>
+                    <tr>
+                        <th>Mes</th>
+                        <th class="text-end">MSI actuales</th>
+                        <th class="text-end">Esta compra</th>
+                        <th class="text-end">Flujo libre estimado</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var p in impacto.Proyeccion)
+                    {
+                        <tr>
+                            <td class="fw-semibold">@NombreMes(p.Mes, p.Anio)</td>
+                            <td class="text-end" data-label="MSI actuales">@Moneda(p.MsiExistentes)</td>
+                            <td class="text-end" data-label="Esta compra">@Moneda(p.NuevaCompra)</td>
+                            <td class="text-end @(p.FlujoLibre < 0 ? "text-danger" : "text-success")" data-label="Flujo libre">@Moneda(p.FlujoLibre)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <div class="small text-muted mt-2">Flujo libre = ingreso promedio - gasto promedio (sin compras a MSI) - mensualidades MSI. Promedios de los últimos meses cerrados; la primera mensualidad se cuenta desde el mes siguiente.</div>
+    }
+</div></div>
