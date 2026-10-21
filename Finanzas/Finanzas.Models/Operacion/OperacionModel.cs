@@ -32,6 +32,9 @@ public class OperacionRequest
     // Obligatorio en préstamos y deudas personales.
     public int? PersonaId { get; set; }
 
+    // Solo en PrestamoOtorgado y DeudaAdquirida: si es false, el préstamo se guarda sin mover ninguna cuenta.
+    public bool AfectaCuenta { get; set; } = true;
+
     // Solo para gastos en tarjeta de crédito: compra a meses sin intereses (2 a 60).
     public int? NumeroMeses { get; set; }
 }

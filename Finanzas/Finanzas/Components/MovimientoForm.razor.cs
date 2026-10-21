@@ -50,8 +50,10 @@ public partial class MovimientoForm
     private bool PermiteMsi => form.TipoOperacion == TipoOperacion.Gasto && OrigenEsCredito;
     private IEnumerable<int> OpcionesMeses => MesesComunes.Contains(mesesMsi) ? MesesComunes : MesesComunes.Append(mesesMsi).Order();
 
-    private bool PideOrigen => form.TipoOperacion is TipoOperacion.Gasto or TipoOperacion.Transferencia or TipoOperacion.PagoTarjeta or TipoOperacion.PrestamoOtorgado or TipoOperacion.PagoDeudaPersona;
-    private bool PideDestino => form.TipoOperacion is TipoOperacion.Ingreso or TipoOperacion.Transferencia or TipoOperacion.PagoTarjeta or TipoOperacion.DeudaAdquirida or TipoOperacion.CobroPrestamo;
+    private bool PermiteAfectarCuenta => form.TipoOperacion is TipoOperacion.PrestamoOtorgado or TipoOperacion.DeudaAdquirida;
+    private bool SinCuenta => PermiteAfectarCuenta && !form.AfectaCuenta;
+    private bool PideOrigen => !SinCuenta && form.TipoOperacion is TipoOperacion.Gasto or TipoOperacion.Transferencia or TipoOperacion.PagoTarjeta or TipoOperacion.PrestamoOtorgado or TipoOperacion.PagoDeudaPersona;
+    private bool PideDestino => !SinCuenta && form.TipoOperacion is TipoOperacion.Ingreso or TipoOperacion.Transferencia or TipoOperacion.PagoTarjeta or TipoOperacion.DeudaAdquirida or TipoOperacion.CobroPrestamo;
     private bool PidePersona => TipoOperacionTexto.EsPersona(form.TipoOperacion);
     private bool PideCategoria => form.TipoOperacion is TipoOperacion.Gasto or TipoOperacion.Ingreso;
     private bool EsTransferenciaOPago => form.TipoOperacion is TipoOperacion.Transferencia or TipoOperacion.PagoTarjeta;
@@ -110,7 +112,8 @@ public partial class MovimientoForm
             Fecha = op.Fecha,
             Descripcion = op.Descripcion,
             CategoriaId = op.CategoriaId,
-            PersonaId = op.PersonaId
+            PersonaId = op.PersonaId,
+            AfectaCuenta = op.Movimientos.Count > 0
         };
         fecha = op.Fecha.Date;
         if (op.Msi != null)
@@ -145,6 +148,7 @@ public partial class MovimientoForm
         form.CuentaOrigenId = null;
         form.CuentaDestinoId = null;
         form.CategoriaId = null;
+        form.AfectaCuenta = true;
         esMsi = false;
     }
 

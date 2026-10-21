@@ -194,6 +194,8 @@ public class OperacionService(FinanzasDbContext context)
                 break;
             }
             // Préstamos y deudas personales: solo mueven efectivo o débito, nunca una tarjeta.
+            case TipoOperacion.PrestamoOtorgado or TipoOperacion.DeudaAdquirida when !r.AfectaCuenta:
+                break;
             case TipoOperacion.PrestamoOtorgado:
             case TipoOperacion.PagoDeudaPersona:
             {

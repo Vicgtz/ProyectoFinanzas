@@ -44,6 +44,20 @@
                             </div>
                         }
 
+                        @if (PermiteAfectarCuenta)
+                        {
+                            <div class="mb-3">
+                                <div class="form-check form-switch">
+                                    <InputCheckbox id="mov-afecta" class="form-check-input" @bind-Value="form.AfectaCuenta" disabled="@guardando" />
+                                    <label class="form-check-label" for="mov-afecta">@(form.TipoOperacion == TipoOperacion.DeudaAdquirida ? "Sumar el dinero a una cuenta" : "Descontar el dinero de una cuenta")</label>
+                                </div>
+                                @if (!form.AfectaCuenta)
+                                {
+                                    <div class="form-text">Solo se guarda el registro; ninguna cuenta cambia de saldo.</div>
+                                }
+                            </div>
+                        }
+
                         @if (PideOrigen)
                         {
                             <div class="mb-3">
