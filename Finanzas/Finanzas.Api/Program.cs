@@ -59,10 +59,14 @@ builder.Services.AddControllers();
 // Learn more about configuring OpenAPI at https://aka.ms/aspnet/openapi
 builder.Services.AddOpenApi();
 
-builder.Services.AddCors(options => options.AddDefaultPolicy(policy => policy
-    .WithOrigins("http://localhost:5150", "https://localhost:7132")
-    .AllowAnyMethod()
-    .AllowAnyHeader()));
+builder.Services.AddCors(options =>
+{
+    var origenes = builder.Configuration.GetSection("Cors:AllowedOrigins").Get<string[]>() ?? [];
+    options.AddPolicy("Blazor", policy =>
+        policy.WithOrigins(origenes.Select(o => o.TrimEnd('/')).ToArray())
+              .AllowAnyHeader()
+              .AllowAnyMethod());
+});
 
 var app = builder.Build();
 
@@ -77,7 +81,8 @@ else
     app.UseHttpsRedirection();
 }
 
-app.UseCors();
+app.UseRouting();
+app.UseCors("Blazor");
 app.UseAuthentication();
 app.UseAuthorization();
 
