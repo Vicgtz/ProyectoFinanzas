@@ -18,7 +18,7 @@ La base de datos ya existe (SQL Server local, `FinanzasDB`, autenticación integ
 ## Ejecutar
 
 - API: `dotnet run --project Finanzas/Finanzas.Api --launch-profile http` → `http://localhost:5137`
-- Web: `dotnet run --project Finanzas/Finanzas --launch-profile http` → `http://localhost:5150` (la URL de la API está en `Finanzas/Finanzas/wwwroot/appsettings.json`)
+- Web: `dotnet run --project Finanzas/Finanzas --launch-profile http` → `http://localhost:5150` (la URL de la API está en `Finanzas/Finanzas/wwwroot/appsettings.json`; `appsettings.Development.json` apunta a localhost al correr en local y `appsettings.Production.json` al servidor `192.168.68.124:5000` al publicar)
 - Compilar: `dotnet build Finanzas/Finanzas.sln`
 - `.claude/launch.json` define las configuraciones `api` y `web` para la vista previa de la herramienta.
 - Cuidado: no compilar la solución mientras la web o la API están corriendo; los archivos quedan bloqueados o la web sirve archivos obsoletos. Detener, compilar y volver a iniciar.

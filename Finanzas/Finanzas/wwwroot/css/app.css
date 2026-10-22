@@ -274,6 +274,18 @@ a, .btn-link {
         margin: 0 !important;
     }
 
+    /* Iconos SVG centrados dentro de los botones de acción */
+    .table-cards td.acciones .btn {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .table-cards td.acciones .btn svg {
+        width: 1.25rem;
+        height: 1.25rem;
+    }
+
 }
 
 @media (max-width: 575.98px) {
@@ -284,6 +296,99 @@ a, .btn-link {
     .modal-footer > .btn {
         width: 100%;
         margin: 0.25rem 0 0 0;
+    }
+
+    /* Formulario de movimiento por pasos: pantalla completa, cuerpo con scroll y botones siempre visibles */
+    .mov-content {
+        height: 100dvh;
+    }
+
+    .mov-form {
+        display: flex;
+        flex-direction: column;
+        height: 100%;
+    }
+
+    .mov-form .modal-body {
+        flex: 1 1 auto;
+        overflow-y: auto;
+    }
+
+    .mov-form .modal-footer.mov-footer-pasos {
+        flex-direction: row;
+        flex-wrap: nowrap;
+        gap: 0.75rem;
+        padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+    }
+
+    .mov-form .modal-footer.mov-footer-pasos > .btn {
+        flex: 1;
+        width: auto;
+        margin: 0;
+    }
+
+    .tipo-botones {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+    }
+
+    .cuenta-botones {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 0.75rem;
+    }
+
+    .tipo-boton {
+        min-height: 4.5rem;
+        padding: 0.5rem;
+        border: 2px solid var(--fz-borde);
+        border-radius: 14px;
+        background: #fff;
+        color: #0f4c45;
+        font-weight: 500;
+        text-align: center;
+        line-height: 1.2;
+    }
+
+    .tipo-boton.activo {
+        border-color: #1f8268;
+        background: #e4f3ee;
+    }
+
+    .tipo-boton:disabled:not(.activo) {
+        opacity: 0.5;
+    }
+
+    .mov-paso:not(.activo) {
+        display: none;
+    }
+
+    .mov-progreso {
+        margin-bottom: 1.25rem;
+    }
+
+    .mov-progreso-texto {
+        font-size: 0.85rem;
+        font-weight: 500;
+        color: #5f726d;
+        margin-bottom: 0.4rem;
+    }
+
+    .mov-progreso-barra {
+        display: flex;
+        gap: 0.4rem;
+    }
+
+    .mov-progreso-barra span {
+        flex: 1;
+        height: 6px;
+        border-radius: 3px;
+        background: var(--fz-borde);
+    }
+
+    .mov-progreso-barra span.hecho {
+        background: #1f8268;
     }
 }
 

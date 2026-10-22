@@ -181,6 +181,58 @@ public partial class MovimientoForm
 
     private Task Cancelar() => guardando ? Task.CompletedTask : OnCancelado.InvokeAsync();
 
+    // Pasos del formulario en móvil (en escritorio se ve todo junto).
+    private const int TotalPasos = 3;
+    private int paso = 1;
+
+    private string TituloPaso => paso switch
+    {
+        1 => "Tipo",
+        2 => PidePersona ? "Persona y cuenta" : "Cuenta",
+        _ => "Detalles"
+    };
+
+    private void Siguiente()
+    {
+        errorForm = ValidarPaso(paso);
+        if (errorForm == null && paso < TotalPasos) paso++;
+    }
+
+    // En móvil, tocar un tipo lo elige y pasa al siguiente paso.
+    private void ElegirTipo(string tipo)
+    {
+        if (form.TipoOperacion != tipo) CambiarTipo(tipo);
+        errorForm = null;
+        paso = 2;
+    }
+
+    // En móvil, al elegir la última cuenta que falta se pasa solo al siguiente paso.
+    private void ElegirCuenta(int id, bool origen)
+    {
+        if (origen) form.CuentaOrigenId = id; else form.CuentaDestinoId = id;
+        var error = ValidarPaso(2);
+        // Lo que aún falta por elegir no es un error; sí lo es repetir la misma cuenta.
+        errorForm = error is "El origen y el destino deben ser distintos" ? error : null;
+        if (error == null) paso = 3;
+    }
+
+    private void Atras()
+    {
+        errorForm = null;
+        if (paso > 1) paso--;
+    }
+
+    private string? ValidarPaso(int numero)
+    {
+        if (numero != 2) return null;
+        if (PidePersona && form.PersonaId == null) return "Selecciona la persona";
+        if (PideOrigen && form.CuentaOrigenId == null) return "Selecciona la cuenta";
+        if (PideDestino && form.CuentaDestinoId == null) return "Selecciona la cuenta";
+        if (form.TipoOperacion == TipoOperacion.Transferencia && form.CuentaOrigenId == form.CuentaDestinoId)
+            return "El origen y el destino deben ser distintos";
+        return null;
+    }
+
     // Validación rápida en pantalla; la API vuelve a validar todo.
     private string? Validar()
     {

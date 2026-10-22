@@ -7,8 +7,8 @@
 <div class="modal-backdrop fade show"></div>
 <div class="modal fade show d-block" tabindex="-1" role="dialog" aria-modal="true">
     <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
-        <div class="modal-content">
-            <EditForm Model="form" OnSubmit="Guardar">
+        <div class="modal-content mov-content">
+            <EditForm Model="form" OnSubmit="Guardar" class="mov-form">
                 <div class="modal-header">
                     <h5 class="modal-title">@(EsEdicion ? "Editar movimiento" : "Nuevo movimiento")</h5>
                     <button type="button" class="btn-close" aria-label="Cerrar" @onclick="Cancelar" disabled="@guardando"></button>
@@ -20,130 +20,172 @@
                     }
                     else
                     {
-                        <div class="mb-3">
-                            <label class="form-label" for="mov-tipo">Tipo</label>
-                            <InputSelect id="mov-tipo" class="form-select" Value="form.TipoOperacion" ValueChanged="@((string t) => CambiarTipo(t))" ValueExpression="@(() => form.TipoOperacion)" disabled="@(guardando || EsEdicion)">
-                                @foreach (var t in Tipos)
+                        <div class="mov-progreso d-sm-none" aria-hidden="true">
+                            <div class="mov-progreso-texto">Paso @paso de @TotalPasos · @TituloPaso</div>
+                            <div class="mov-progreso-barra">
+                                @for (var i = 1; i <= TotalPasos; i++)
                                 {
-                                    <option value="@t.Clave">@t.Texto</option>
+                                    <span class="@(i <= paso ? "hecho" : "")"></span>
                                 }
-                            </InputSelect>
+                            </div>
                         </div>
 
-                        @if (PidePersona)
-                        {
-                            <div class="mb-3">
-                                <label class="form-label" for="mov-persona">Persona</label>
-                                <InputSelect id="mov-persona" class="form-select" @bind-Value="form.PersonaId" disabled="@(guardando || PersonaIdInicial != null)">
-                                    <option value="">Selecciona...</option>
-                                    @foreach (var p in PersonasVisibles)
-                                    {
-                                        <option value="@p.Id">@p.Nombre</option>
-                                    }
-                                </InputSelect>
-                            </div>
-                        }
-
-                        @if (PermiteAfectarCuenta)
-                        {
-                            <div class="mb-3">
-                                <div class="form-check form-switch">
-                                    <InputCheckbox id="mov-afecta" class="form-check-input" @bind-Value="form.AfectaCuenta" disabled="@guardando" />
-                                    <label class="form-check-label" for="mov-afecta">@(form.TipoOperacion == TipoOperacion.DeudaAdquirida ? "Sumar el dinero a una cuenta" : "Descontar el dinero de una cuenta")</label>
-                                </div>
-                                @if (!form.AfectaCuenta)
+                        <div class="mov-paso @(paso == 1 ? "activo" : "")">
+                            <div class="tipo-botones d-sm-none" role="radiogroup" aria-label="Tipo de movimiento">
+                                @foreach (var t in Tipos)
                                 {
-                                    <div class="form-text">Solo se guarda el registro; ninguna cuenta cambia de saldo.</div>
+                                    <button type="button" class="tipo-boton @(form.TipoOperacion == t.Clave ? "activo" : "")" role="radio" aria-checked="@(form.TipoOperacion == t.Clave)"
+                                            @onclick="() => ElegirTipo(t.Clave)" disabled="@(guardando || EsEdicion)">@t.Texto</button>
                                 }
                             </div>
-                        }
-
-                        @if (PideOrigen)
-                        {
-                            <div class="mb-3">
-                                <label class="form-label" for="mov-origen">@(EsTransferenciaOPago ? "Cuenta origen" : "Cuenta")</label>
-                                <InputSelect id="mov-origen" class="form-select" @bind-Value="form.CuentaOrigenId" disabled="@guardando">
-                                    <option value="">Selecciona...</option>
-                                    @foreach (var c in CuentasOrigen)
+                            <div class="mb-3 d-none d-sm-block">
+                                <label class="form-label" for="mov-tipo">Tipo</label>
+                                <InputSelect id="mov-tipo" class="form-select" Value="form.TipoOperacion" ValueChanged="@((string t) => CambiarTipo(t))" ValueExpression="@(() => form.TipoOperacion)" disabled="@(guardando || EsEdicion)">
+                                    @foreach (var t in Tipos)
                                     {
-                                        <option value="@c.Id">@c.Nombre</option>
+                                        <option value="@t.Clave">@t.Texto</option>
                                     }
                                 </InputSelect>
                             </div>
-                        }
+                        </div>
 
-                        @if (PideDestino)
-                        {
-                            <div class="mb-3">
-                                <label class="form-label" for="mov-destino">@(form.TipoOperacion == TipoOperacion.PagoTarjeta ? "Tarjeta a pagar" : EsTransferenciaOPago ? "Cuenta destino" : "Cuenta")</label>
-                                <InputSelect id="mov-destino" class="form-select" @bind-Value="form.CuentaDestinoId" disabled="@guardando">
-                                    <option value="">Selecciona...</option>
-                                    @foreach (var c in CuentasDestino)
+                        <div class="mov-paso @(paso == 2 ? "activo" : "")">
+                            @if (PidePersona)
+                            {
+                                <div class="mb-3">
+                                    <label class="form-label" for="mov-persona">Persona</label>
+                                    <InputSelect id="mov-persona" class="form-select" @bind-Value="form.PersonaId" disabled="@(guardando || PersonaIdInicial != null)">
+                                        <option value="">Selecciona...</option>
+                                        @foreach (var p in PersonasVisibles)
+                                        {
+                                            <option value="@p.Id">@p.Nombre</option>
+                                        }
+                                    </InputSelect>
+                                </div>
+                            }
+
+                            @if (PermiteAfectarCuenta)
+                            {
+                                <div class="mb-3">
+                                    <div class="form-check form-switch">
+                                        <InputCheckbox id="mov-afecta" class="form-check-input" @bind-Value="form.AfectaCuenta" disabled="@guardando" />
+                                        <label class="form-check-label" for="mov-afecta">@(form.TipoOperacion == TipoOperacion.DeudaAdquirida ? "Sumar el dinero a una cuenta" : "Descontar el dinero de una cuenta")</label>
+                                    </div>
+                                    @if (!form.AfectaCuenta)
                                     {
-                                        <option value="@c.Id">@c.Nombre</option>
+                                        <div class="form-text">Solo se guarda el registro; ninguna cuenta cambia de saldo.</div>
                                     }
-                                </InputSelect>
-                            </div>
-                        }
+                                </div>
+                            }
 
-                        <div class="row g-3 mb-3">
-                            <div class="col-12 col-sm-6">
+                            @if (PideOrigen)
+                            {
+                                <div class="mb-3 d-sm-none">
+                                    <div class="form-label">@(EsTransferenciaOPago ? "Cuenta origen" : "Cuenta")</div>
+                                    <div class="cuenta-botones" role="radiogroup">
+                                        @foreach (var c in CuentasOrigen)
+                                        {
+                                            <button type="button" class="tipo-boton @(form.CuentaOrigenId == c.Id ? "activo" : "")" role="radio" aria-checked="@(form.CuentaOrigenId == c.Id)"
+                                                    @onclick="() => ElegirCuenta(c.Id, true)" disabled="@guardando">@c.Nombre</button>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="mb-3 d-none d-sm-block">
+                                    <label class="form-label" for="mov-origen">@(EsTransferenciaOPago ? "Cuenta origen" : "Cuenta")</label>
+                                    <InputSelect id="mov-origen" class="form-select" @bind-Value="form.CuentaOrigenId" disabled="@guardando">
+                                        <option value="">Selecciona...</option>
+                                        @foreach (var c in CuentasOrigen)
+                                        {
+                                            <option value="@c.Id">@c.Nombre</option>
+                                        }
+                                    </InputSelect>
+                                </div>
+                            }
+
+                            @if (PideDestino)
+                            {
+                                <div class="mb-3 d-sm-none">
+                                    <div class="form-label">@(form.TipoOperacion == TipoOperacion.PagoTarjeta ? "Tarjeta a pagar" : EsTransferenciaOPago ? "Cuenta destino" : "Cuenta")</div>
+                                    <div class="cuenta-botones" role="radiogroup">
+                                        @foreach (var c in CuentasDestino)
+                                        {
+                                            <button type="button" class="tipo-boton @(form.CuentaDestinoId == c.Id ? "activo" : "")" role="radio" aria-checked="@(form.CuentaDestinoId == c.Id)"
+                                                    @onclick="() => ElegirCuenta(c.Id, false)" disabled="@guardando">@c.Nombre</button>
+                                        }
+                                    </div>
+                                </div>
+                                <div class="mb-3 d-none d-sm-block">
+                                    <label class="form-label" for="mov-destino">@(form.TipoOperacion == TipoOperacion.PagoTarjeta ? "Tarjeta a pagar" : EsTransferenciaOPago ? "Cuenta destino" : "Cuenta")</label>
+                                    <InputSelect id="mov-destino" class="form-select" @bind-Value="form.CuentaDestinoId" disabled="@guardando">
+                                        <option value="">Selecciona...</option>
+                                        @foreach (var c in CuentasDestino)
+                                        {
+                                            <option value="@c.Id">@c.Nombre</option>
+                                        }
+                                    </InputSelect>
+                                </div>
+                            }
+                        </div>
+
+                        <div class="mov-paso @(paso == 3 ? "activo" : "")">
+                            @if (PideCategoria)
+                            {
+                                <div class="mb-3">
+                                    <label class="form-label" for="mov-cat">Categoría</label>
+                                    <InputSelect id="mov-cat" class="form-select" @bind-Value="form.CategoriaId" disabled="@guardando">
+                                        <option value="">Sin categoría</option>
+                                        @foreach (var c in CategoriasVisibles)
+                                        {
+                                            <option value="@c.Id">@c.NombreCompleto</option>
+                                        }
+                                    </InputSelect>
+                                </div>
+                            }
+
+                            <div class="mb-3">
                                 <label class="form-label" for="mov-monto">Monto</label>
                                 <InputNumber id="mov-monto" class="form-control" @bind-Value="form.Monto" disabled="@guardando" />
                             </div>
-                            <div class="col-12 col-sm-6">
+
+                            <div class="mb-3">
                                 <label class="form-label" for="mov-fecha">Fecha</label>
                                 <InputDate id="mov-fecha" class="form-control" @bind-Value="fecha" max="@DateTime.Today.ToString("yyyy-MM-dd")" disabled="@guardando" />
                             </div>
-                        </div>
 
-                        @if (PermiteMsi)
-                        {
-                            <div class="mb-3">
-                                <div class="form-check form-switch">
-                                    <InputCheckbox id="mov-msi" class="form-check-input" @bind-Value="esMsi" disabled="@guardando" />
-                                    <label class="form-check-label" for="mov-msi">Compra a meses sin intereses</label>
-                                </div>
-                                @if (esMsi)
-                                {
-                                    <div class="row g-2 align-items-center mt-1">
-                                        <div class="col-6">
-                                            <InputSelect id="mov-meses" class="form-select" @bind-Value="mesesMsi" disabled="@guardando">
-                                                @foreach (var m in OpcionesMeses)
-                                                {
-                                                    <option value="@m">@m meses</option>
-                                                }
-                                            </InputSelect>
-                                        </div>
-                                        <div class="col-6 small text-muted">
-                                            @if (form.Monto > 0)
-                                            {
-                                                <span>≈ @Finanzas.Services.Formato.Moneda(form.Monto / mesesMsi) al mes</span>
-                                            }
-                                        </div>
+                            @if (PermiteMsi)
+                            {
+                                <div class="mb-3">
+                                    <div class="form-check form-switch">
+                                        <InputCheckbox id="mov-msi" class="form-check-input" @bind-Value="esMsi" disabled="@guardando" />
+                                        <label class="form-check-label" for="mov-msi">Compra a meses sin intereses</label>
                                     </div>
-                                    <div class="form-text">El gasto se registra completo y reduce tu crédito disponible; las mensualidades se proyectan en cada corte.</div>
-                                }
-                            </div>
-                        }
-
-                        @if (PideCategoria)
-                        {
-                            <div class="mb-3">
-                                <label class="form-label" for="mov-cat">Categoría</label>
-                                <InputSelect id="mov-cat" class="form-select" @bind-Value="form.CategoriaId" disabled="@guardando">
-                                    <option value="">Sin categoría</option>
-                                    @foreach (var c in CategoriasVisibles)
+                                    @if (esMsi)
                                     {
-                                        <option value="@c.Id">@c.NombreCompleto</option>
+                                        <div class="row g-2 align-items-center mt-1">
+                                            <div class="col-6">
+                                                <InputSelect id="mov-meses" class="form-select" @bind-Value="mesesMsi" disabled="@guardando">
+                                                    @foreach (var m in OpcionesMeses)
+                                                    {
+                                                        <option value="@m">@m meses</option>
+                                                    }
+                                                </InputSelect>
+                                            </div>
+                                            <div class="col-6 small text-muted">
+                                                @if (form.Monto > 0)
+                                                {
+                                                    <span>≈ @Finanzas.Services.Formato.Moneda(form.Monto / mesesMsi) al mes</span>
+                                                }
+                                            </div>
+                                        </div>
+                                        <div class="form-text">El gasto se registra completo y reduce tu crédito disponible; las mensualidades se proyectan en cada corte.</div>
                                     }
-                                </InputSelect>
-                            </div>
-                        }
+                                </div>
+                            }
 
-                        <div class="mb-3">
-                            <label class="form-label" for="mov-desc">Descripción</label>
-                            <InputText id="mov-desc" class="form-control" @bind-Value="form.Descripcion" maxlength="250" disabled="@guardando" />
+                            <div class="mb-3">
+                                <label class="form-label" for="mov-desc">Descripción</label>
+                                <InputText id="mov-desc" class="form-control" @bind-Value="form.Descripcion" maxlength="250" disabled="@guardando" />
+                            </div>
                         </div>
                     }
 
@@ -152,7 +194,9 @@
                         <div class="alert alert-danger py-2 mb-0" role="alert">@errorForm</div>
                     }
                 </div>
-                <div class="modal-footer">
+
+                @* Escritorio: todo el formulario junto *@
+                <div class="modal-footer d-none d-sm-flex">
                     <button type="button" class="btn btn-outline-secondary" @onclick="Cancelar" disabled="@guardando">Cancelar</button>
                     <button type="submit" class="btn btn-primary" disabled="@(guardando || cargando)">
                         @if (guardando)
@@ -161,6 +205,32 @@
                         }
                         Guardar
                     </button>
+                </div>
+
+                @* Móvil: por pasos *@
+                <div class="modal-footer mov-footer-pasos d-flex d-sm-none">
+                    @if (paso == 1)
+                    {
+                        <button type="button" class="btn btn-outline-secondary" @onclick="Cancelar" disabled="@guardando">Cancelar</button>
+                    }
+                    else
+                    {
+                        <button type="button" class="btn btn-outline-secondary" @onclick="Atras" disabled="@guardando">Atrás</button>
+                    }
+                    @if (paso < TotalPasos)
+                    {
+                        <button type="button" class="btn btn-primary" @onclick="Siguiente" disabled="@cargando">Siguiente</button>
+                    }
+                    else
+                    {
+                        <button type="submit" class="btn btn-primary" disabled="@(guardando || cargando)">
+                            @if (guardando)
+                            {
+                                <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+                            }
+                            Guardar
+                        </button>
+                    }
                 </div>
             </EditForm>
         </div>
