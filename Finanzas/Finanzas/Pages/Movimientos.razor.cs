@@ -22,8 +22,7 @@ public partial class Movimientos
     private bool hayMas;
     private string? error;
 
-    private DateTime? desde;
-    private DateTime? hasta;
+    private string mes = DateTime.Today.ToString("yyyy-MM");
     private string tipo = "";
     private string cuentaId = "";
     private string categoriaId = "";
@@ -45,16 +44,34 @@ public partial class Movimientos
         await Recargar();
     }
 
-    private OperacionFiltro Filtro(int skip) => new()
+    private OperacionFiltro Filtro(int skip)
     {
-        Desde = desde?.Date,
-        Hasta = hasta?.Date,
+        DateTime? desde = null, hasta = null;
+        if (DateTime.TryParseExact(mes, "yyyy-MM", System.Globalization.CultureInfo.InvariantCulture,
+                System.Globalization.DateTimeStyles.None, out var primerDia))
+        {
+            desde = primerDia;
+            hasta = primerDia.AddMonths(1).AddDays(-1);
+        }
+        return Filtro(skip, desde, hasta);
+    }
+
+    private OperacionFiltro Filtro(int skip, DateTime? desde, DateTime? hasta) => new()
+    {
+        Desde = desde,
+        Hasta = hasta,
         TipoOperacion = string.IsNullOrEmpty(tipo) ? null : tipo,
         CuentaId = int.TryParse(cuentaId, out var cu) ? cu : null,
         CategoriaId = int.TryParse(categoriaId, out var ca) ? ca : null,
         Skip = skip,
         Take = PorPagina
     };
+
+    private async Task CambiarMes(ChangeEventArgs e)
+    {
+        mes = e.Value?.ToString() ?? "";
+        await Recargar();
+    }
 
     private async Task Recargar()
     {
