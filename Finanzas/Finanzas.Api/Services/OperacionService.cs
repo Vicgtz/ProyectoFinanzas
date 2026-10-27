@@ -51,7 +51,7 @@ public class OperacionService(FinanzasDbContext context)
         var check = ValidarRequest(request);
         if (!check.Success) return check;
 
-        var categoria = await ValidarCategoria(request);
+        var categoria = await ValidarCategoria(idUsuario, request);
         if (!categoria.Success) return categoria;
 
         var cuentas = await CargarCuentas(idUsuario, request.CuentaOrigenId, request.CuentaDestinoId);
@@ -75,7 +75,7 @@ public class OperacionService(FinanzasDbContext context)
         var check = ValidarRequest(request);
         if (!check.Success) return check;
 
-        var categoria = await ValidarCategoria(request);
+        var categoria = await ValidarCategoria(idUsuario, request);
         if (!categoria.Success) return categoria;
 
         var operacion = await context.Operacions.Include(a => a.MovimientoCuentas).Include(a => a.CompraMsi)
@@ -373,10 +373,10 @@ public class OperacionService(FinanzasDbContext context)
         }
     }
 
-    private async Task<BaseResponse> ValidarCategoria(OperacionRequest r)
+    private async Task<BaseResponse> ValidarCategoria(int idUsuario, OperacionRequest r)
     {
         if (r.CategoriaId == null) return new BaseResponse { Success = true };
-        var existe = await context.Categorias.AnyAsync(a => a.Id == r.CategoriaId && a.Activa);
+        var existe = await context.Categorias.AnyAsync(a => a.Id == r.CategoriaId && a.Activa && (a.UsuarioId == null || a.UsuarioId == idUsuario));
         return existe ? new BaseResponse { Success = true } : new BaseResponse { Message = "Categoría no encontrada" };
     }
 

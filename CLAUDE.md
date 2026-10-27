@@ -15,7 +15,7 @@ La solución es `Finanzas/Finanzas.sln` (el repositorio git está un nivel arrib
 
 La base de datos ya existe (SQL Server local, `FinanzasDB`, autenticación integrada). No hay migraciones: el esquema se crea fuera del repositorio y las entidades se generan desde él.
 
-`Scripts/` guarda los scripts SQL de los cambios de esquema, numerados (`01_DiasParaPago.sql`, `02_Recurrente.sql`, `03_Presupuesto.sql`); son idempotentes y se ejecutan a mano en SSMS **antes** de iniciar la API que los usa. Las entidades `Recurrente` y `Presupuesto`, la columna `Cuenta.DiasParaPago` y sus configuraciones se escribieron a mano con el formato del generador: al volver a correr la plantilla `.tt` con esas tablas ya creadas deben quedar equivalentes.
+`Scripts/` guarda los scripts SQL de los cambios de esquema, numerados (`01_DiasParaPago.sql`, `02_Recurrente.sql`, `03_Presupuesto.sql`, `04_CategoriaUsuario.sql`); son idempotentes y se ejecutan a mano en SSMS **antes** de iniciar la API que los usa. Las entidades `Recurrente` y `Presupuesto`, las columnas `Cuenta.DiasParaPago` y `Categoria.UsuarioId` y sus configuraciones se escribieron a mano con el formato del generador: al volver a correr la plantilla `.tt` con esas tablas ya creadas deben quedar equivalentes.
 
 ## Ejecutar
 
@@ -70,11 +70,11 @@ Tablas principales: `Usuario`, `Cuenta`, `Categoria`, `Persona`, `Operacion`, `M
 - **Análisis**: meses en déficit, variación mensual, gasto esencial vs. no esencial (`Categoria.ClasificacionGasto`: `E`, `N`, `X`), categorías que suben, alertas y simulador de compra grande (contado o MSI).
 - **Recurrentes**: plantillas de gastos e ingresos que se repiten, con los pendientes por confirmar (también visibles en Inicio).
 - **Presupuestos**: límite mensual por categoría con barras de avance (`Components/BarraPresupuesto`), navegación por mes.
-- **Categorías** (catálogo, `TipoSugerido` `I`/`G`) y **Personas** con su detalle e historial de préstamos.
+- **Categorías** (`TipoSugerido` `I`/`G`): las generales (`UsuarioId` NULL) son de todos y de solo lectura; cada usuario puede crear, editar y desactivar las suyas (`UsuarioId` = él), que solo él ve. El nombre no puede repetir una general ni otra propia. Todo lugar que valide o liste categorías debe filtrar `UsuarioId == null || UsuarioId == idUsuario` y **Personas** con su detalle e historial de préstamos.
 
 ## Endpoints
 
-`api/Usuario`, `api/Cuenta` (incluye `GetDetalle`, `RegistrarCorte`, `EliminarCorte`), `api/Categoria`, `api/Persona`, `api/Operacion`, `api/Dashboard`, `api/Msi`, `api/Analisis`, `api/Recurrente` (`GetPendientes`, `Confirmar`, `Omitir`), `api/Presupuesto` (`GetResumen`). Los métodos de lectura son `Get`/`GetList`/`GetResumen`…; los de escritura, `Save`/`Edit`/`Delete` por POST.
+`api/Usuario`, `api/Cuenta` (incluye `GetDetalle`, `RegistrarCorte`, `EliminarCorte`), `api/Categoria` (`GetList` acepta `incluirInactivas`), `api/Persona`, `api/Operacion`, `api/Dashboard`, `api/Msi`, `api/Analisis`, `api/Recurrente` (`GetPendientes`, `Confirmar`, `Omitir`), `api/Presupuesto` (`GetResumen`). Los métodos de lectura son `Get`/`GetList`/`GetResumen`…; los de escritura, `Save`/`Edit`/`Delete` por POST.
 
 ## Al probar con datos
 

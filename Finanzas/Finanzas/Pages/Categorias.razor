@@ -5,6 +5,7 @@
 
 <div class="page-header">
     <h1>Categorías</h1>
+    <button class="btn btn-primary" @onclick="Nueva">Nueva categoría</button>
 </div>
 
 @if (!string.IsNullOrEmpty(error))
@@ -44,18 +45,96 @@ else
                     <th>Categoría</th>
                     <th>Tipo</th>
                     <th>Clasificación</th>
+                    <th></th>
                 </tr>
             </thead>
             <tbody>
                 @foreach (var c in CategoriasVisibles)
                 {
-                    <tr>
-                        <td class="fw-semibold"><span><span class="fs-5 me-2">@c.Emoji</span>@c.Nombre</span></td>
+                    <tr class="@(c.Activa ? "" : "text-muted")">
+                        <td class="fw-semibold">
+                            <span><span class="fs-5 me-2">@c.Emoji</span>@c.Nombre</span>
+                            @if (c.EsPropia)
+                            {
+                                <span class="badge bg-info text-dark ms-2">Propia</span>
+                            }
+                            @if (!c.Activa)
+                            {
+                                <span class="badge bg-secondary ms-1">Inactiva</span>
+                            }
+                        </td>
                         <td data-label="Tipo"><span class="badge @ClaseTipo(c.TipoSugerido)">@NombreTipo(c.TipoSugerido)</span></td>
                         <td data-label="Clasificación">@NombreClasificacion(c)</td>
+                        <td class="text-end">
+                            @if (c.EsPropia)
+                            {
+                                <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => Editar(c)">Editar</button>
+                                <button class="btn btn-sm btn-outline-secondary" @onclick="() => CambiarActiva(c)">@(c.Activa ? "Desactivar" : "Activar")</button>
+                            }
+                        </td>
                     </tr>
                 }
             </tbody>
         </table>
+    </div>
+}
+
+@if (modalAbierto)
+{
+    <div class="modal-backdrop fade show"></div>
+    <div class="modal fade show d-block" tabindex="-1" role="dialog" aria-modal="true">
+        <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
+            <div class="modal-content">
+                <EditForm Model="form" OnSubmit="Guardar">
+                    <div class="modal-header">
+                        <h5 class="modal-title">@(editando ? "Editar categoría" : "Nueva categoría")</h5>
+                        <button type="button" class="btn-close" aria-label="Cerrar" @onclick="CerrarModal" disabled="@guardando"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label" for="cat-nombre">Nombre</label>
+                            <InputText id="cat-nombre" class="form-control" maxlength="100" @bind-Value="form.Nombre" disabled="@guardando" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="cat-emoji">Emoji (opcional)</label>
+                            <InputText id="cat-emoji" class="form-control" maxlength="20" @bind-Value="form.Emoji" disabled="@guardando" />
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label" for="cat-tipo">Tipo</label>
+                            <InputSelect id="cat-tipo" class="form-select" @bind-Value="form.TipoSugerido" disabled="@guardando">
+                                <option value="G">Gasto</option>
+                                <option value="I">Ingreso</option>
+                            </InputSelect>
+                        </div>
+                        @if (form.TipoSugerido == "G")
+                        {
+                            <div class="mb-3">
+                                <label class="form-label" for="cat-clas">Clasificación</label>
+                                <InputSelect id="cat-clas" class="form-select" @bind-Value="form.ClasificacionGasto" disabled="@guardando">
+                                    <option value="E">Esencial</option>
+                                    <option value="N">No esencial</option>
+                                    <option value="X">Otro</option>
+                                </InputSelect>
+                            </div>
+                        }
+
+                        @if (!string.IsNullOrEmpty(errorForm))
+                        {
+                            <div class="alert alert-danger py-2 mb-0" role="alert">@errorForm</div>
+                        }
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" @onclick="CerrarModal" disabled="@guardando">Cancelar</button>
+                        <button type="submit" class="btn btn-primary" disabled="@guardando">
+                            @if (guardando)
+                            {
+                                <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+                            }
+                            Guardar
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
     </div>
 }

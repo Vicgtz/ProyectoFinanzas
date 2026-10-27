@@ -66,7 +66,7 @@ public class PresupuestoService(FinanzasDbContext context)
 
     public async Task<BaseResponse> Save(int idUsuario, PresupuestoModel modelo)
     {
-        var check = await Validar(modelo);
+        var check = await Validar(idUsuario, modelo);
         if (!check.Success) return check;
 
         if (await context.Presupuestos.AnyAsync(a => a.UsuarioId == idUsuario && a.CategoriaId == modelo.CategoriaId))
@@ -116,10 +116,10 @@ public class PresupuestoService(FinanzasDbContext context)
         return new BaseResponse { Success = true, Message = "Eliminado" };
     }
 
-    private async Task<BaseResponse> Validar(PresupuestoModel m)
+    private async Task<BaseResponse> Validar(int idUsuario, PresupuestoModel m)
     {
         if (decimal.Round(m.Monto, 2) <= 0) return new BaseResponse { Message = "El monto debe ser mayor a cero" };
-        if (!await context.Categorias.AnyAsync(a => a.Id == m.CategoriaId && a.Activa))
+        if (!await context.Categorias.AnyAsync(a => a.Id == m.CategoriaId && a.Activa && (a.UsuarioId == null || a.UsuarioId == idUsuario)))
             return new BaseResponse { Message = "Categoría no encontrada" };
         return new BaseResponse { Success = true };
     }

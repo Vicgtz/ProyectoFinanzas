@@ -227,7 +227,7 @@ public class RecurrenteService(FinanzasDbContext context, OperacionService opera
         if (m.TipoOperacion == TipoOperacion.Ingreso && cuenta.TipoCuenta == TipoCuentaItem.Credito)
             return new BaseResponse { Message = "Un ingreso no puede abonarse a una tarjeta de crédito" };
 
-        if (m.CategoriaId != null && !await context.Categorias.AnyAsync(a => a.Id == m.CategoriaId && a.Activa))
+        if (m.CategoriaId != null && !await context.Categorias.AnyAsync(a => a.Id == m.CategoriaId && a.Activa && (a.UsuarioId == null || a.UsuarioId == idUsuario)))
             return new BaseResponse { Message = "Categoría no encontrada" };
 
         return new BaseResponse { Success = true };

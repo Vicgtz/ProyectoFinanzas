@@ -25,7 +25,12 @@ namespace Finanzas.Data
             builder.Property(x => x.Activa).HasColumnName(@"Activa").HasColumnType("bit").IsRequired();
             builder.Property(x => x.Orden).HasColumnName(@"Orden").HasColumnType("int").IsRequired();
 
-            builder.HasIndex(x => new { x.Nombre, x.TipoSugerido }).HasDatabaseName("UQ_Categoria_Nombre_Tipo").IsUnique();
+            builder.Property(x => x.UsuarioId).HasColumnName(@"UsuarioId").HasColumnType("int").IsRequired(false);
+
+            builder.HasIndex(x => new { x.UsuarioId, x.Nombre, x.TipoSugerido }).HasDatabaseName("UQ_Categoria_Usuario_Nombre_Tipo").IsUnique();
+
+            // Foreign keys
+            builder.HasOne<Usuario>().WithMany().HasForeignKey(x => x.UsuarioId).OnDelete(DeleteBehavior.ClientSetNull).HasConstraintName("FK_Categoria_Usuario");
         }
     }
 

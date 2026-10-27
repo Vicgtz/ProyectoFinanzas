@@ -21,6 +21,7 @@ namespace Finanzas.Data
         public string ClasificacionGasto { get; set; } // ClasificacionGasto (length: 1)
         public bool Activa { get; set; } // Activa
         public int Orden { get; set; } // Orden
+        public int? UsuarioId { get; set; } // UsuarioId (NULL = categoría general; con valor = categoría propia de ese usuario)
 
         // Reverse navigation
 
