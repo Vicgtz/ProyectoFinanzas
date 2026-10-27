@@ -38,5 +38,7 @@ builder.Services.AddScoped<OperacionService>();
 builder.Services.AddScoped<DashboardService>();
 builder.Services.AddScoped<MsiService>();
 builder.Services.AddScoped<AnalisisService>();
+builder.Services.AddScoped<RecurrenteService>();
+builder.Services.AddScoped<PresupuestoService>();
 
 await builder.Build().RunAsync();

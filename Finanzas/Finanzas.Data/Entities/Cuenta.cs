@@ -17,6 +17,7 @@ namespace Finanzas.Data
         public decimal Saldo { get; set; } // Saldo
         public decimal? LimiteCredito { get; set; } // LimiteCredito
         public byte? DiaCorte { get; set; } // DiaCorte
+        public byte? DiasParaPago { get; set; } // DiasParaPago
         public bool Activa { get; set; } // Activa
         public DateTime FechaCreacion { get; set; } // FechaCreacion
         public byte[] RowVersion { get; set; } // RowVersion (length: 8)

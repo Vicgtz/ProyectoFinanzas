@@ -10,6 +10,12 @@ public class CuentaDetalleModel
     public DateTime? ProximoCorte { get; set; }
     public int? DiasParaCorte { get; set; }
 
+    // Pago del último corte; null si la tarjeta no tiene días para pago configurados.
+    public PagoTarjetaModel? Pago { get; set; }
+
+    // Fecha límite de pago del corte que viene (informativa).
+    public DateTime? ProximaFechaLimite { get; set; }
+
     // Lo cargado a la tarjeta desde el último corte (la compra del día de corte cuenta en el periodo nuevo).
     public decimal ConsumoPeriodoActual { get; set; }
 

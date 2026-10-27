@@ -1,0 +1,38 @@
+@using System.Globalization
+@using Finanzas.Models.Dashboard
+@using Finanzas.Models.Presupuesto
+
+@* Barra de avance de un presupuesto: verde por debajo de 80 %, ámbar de 80 % a 100 %, rojo al rebasarlo. *@
+<div class="mb-1 d-flex justify-content-between align-items-baseline gap-2">
+    <span class="fw-semibold">@Item.Categoria</span>
+    <span class="small @(Item.Nivel == NivelIndicador.Alerta ? "text-danger" : "text-muted")">
+        @Formato.Moneda(Item.Gastado) de @Formato.Moneda(Item.Monto)
+    </span>
+</div>
+<div class="progress" role="progressbar" aria-label="Avance del presupuesto de @Item.Categoria" aria-valuenow="@Ancho" aria-valuemin="0" aria-valuemax="100" style="height:8px">
+    <div class="progress-bar @Color" style="width:@Ancho%"></div>
+</div>
+<div class="small mt-1 @(Item.Nivel == NivelIndicador.Alerta ? "text-danger" : "text-muted")">
+    @if (Item.Disponible >= 0)
+    {
+        <span>@Item.Porcentaje.ToString("0.#")% usado · quedan @Formato.Moneda(Item.Disponible)</span>
+    }
+    else
+    {
+        <span>@Item.Porcentaje.ToString("0.#")% usado · te pasaste @Formato.Moneda(-Item.Disponible)</span>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired] public PresupuestoItemModel Item { get; set; } = default!;
+
+    // La cultura es-MX usa coma decimal y rompe el CSS inline: se formatea con la cultura invariante.
+    private string Ancho => Math.Clamp(Item.Porcentaje, 0, 100).ToString("0.#", CultureInfo.InvariantCulture);
+
+    private string Color => Item.Nivel switch
+    {
+        NivelIndicador.Alerta => "bg-danger",
+        NivelIndicador.Regular => "bg-warning",
+        _ => "bg-success"
+    };
+}

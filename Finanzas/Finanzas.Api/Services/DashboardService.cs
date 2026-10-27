@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Finanzas.Api.Services;
 
 // Solo Ingreso y Gasto cuentan como ingresos/gastos: transferencias y pagos de tarjeta no duplican el gasto original.
-public class DashboardService(FinanzasDbContext context)
+public class DashboardService(FinanzasDbContext context, CuentaDetalleService cuentaDetalle, PresupuestoService presupuestoService)
 {
     private const int MesesHistorial = 6;
     private const int MaxCategorias = 8;
@@ -28,6 +28,10 @@ public class DashboardService(FinanzasDbContext context)
         var cuentas = await context.Cuentas.AsNoTracking()
             .Where(a => a.UsuarioId == idUsuario && a.Activa)
             .Select(a => new { a.TipoCuenta, a.Saldo, a.LimiteCredito })
+            .ToListAsync();
+
+        var tarjetas = await context.Cuentas.AsNoTracking()
+            .Where(a => a.UsuarioId == idUsuario && a.Activa && a.TipoCuenta == TipoCuentaItem.Credito && a.DiasParaPago != null)
             .ToListAsync();
 
         var operaciones = await context.Operacions.AsNoTracking()
@@ -64,6 +68,16 @@ public class DashboardService(FinanzasDbContext context)
                 Gastos = delMes.Where(o => o.TipoOperacion == TipoOperacion.Gasto).Sum(o => o.Monto)
             });
         }
+
+        foreach (var tarjeta in tarjetas)
+        {
+            var pago = await cuentaDetalle.CalcularPago(tarjeta, hoy);
+            if (pago is { Pendiente: > 0 }) modelo.PagosTarjeta.Add(pago);
+        }
+        modelo.PagosTarjeta = modelo.PagosTarjeta.OrderBy(p => p.FechaLimite).ToList();
+
+        var presupuestos = await presupuestoService.GetResumen(idUsuario, anioConsulta, mesConsulta);
+        if (presupuestos.Success && presupuestos.Data != null) modelo.Presupuestos = presupuestos.Data;
 
         var actual = modelo.Meses[^1];
         modelo.Ingresos = actual.Ingresos;

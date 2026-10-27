@@ -46,6 +46,7 @@ public class CuentaService(FinanzasDbContext context)
             Saldo = cuenta.Saldo,
             LimiteCredito = cuenta.LimiteCredito,
             DiaCorte = cuenta.DiaCorte,
+            DiasParaPago = cuenta.DiasParaPago,
             Activa = true
         };
 
@@ -75,6 +76,7 @@ public class CuentaService(FinanzasDbContext context)
         actual.Saldo = cuenta.Saldo;
         actual.LimiteCredito = cuenta.LimiteCredito;
         actual.DiaCorte = cuenta.DiaCorte;
+        actual.DiasParaPago = cuenta.DiasParaPago;
 
         await context.SaveChangesAsync();
         return new BaseResponse { Success = true, Message = "Guardado", Id = actual.Id };
@@ -88,6 +90,7 @@ public class CuentaService(FinanzasDbContext context)
         Saldo = a.Saldo,
         LimiteCredito = a.LimiteCredito,
         DiaCorte = a.DiaCorte,
+        DiasParaPago = a.DiasParaPago,
         Activa = a.Activa
     };
 
@@ -104,12 +107,14 @@ public class CuentaService(FinanzasDbContext context)
         {
             if (c.LimiteCredito is null or < 0) return new BaseResponse { Message = "Límite de crédito inválido" };
             if (c.DiaCorte is null or < 1 or > 31) return new BaseResponse { Message = "El día de corte debe estar entre 1 y 31" };
+            if (c.DiasParaPago is < 1 or > 60) return new BaseResponse { Message = "Los días para pago deben estar entre 1 y 60" };
             if (c.Saldo > c.LimiteCredito) return new BaseResponse { Message = "El saldo no puede superar el límite de crédito" };
         }
         else
         {
             if (c.LimiteCredito != null) return new BaseResponse { Message = "Solo las cuentas de crédito tienen límite" };
             if (c.DiaCorte != null) return new BaseResponse { Message = "Solo las cuentas de crédito tienen día de corte" };
+            if (c.DiasParaPago != null) return new BaseResponse { Message = "Solo las cuentas de crédito tienen días para pago" };
         }
 
         return new BaseResponse { Success = true };

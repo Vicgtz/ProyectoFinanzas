@@ -34,6 +34,26 @@
 }
 else if (datos != null)
 {
+    foreach (var pago in datos.PagosTarjeta)
+    {
+        <div class="alert @(pago.Vencido ? "alert-danger" : pago.DiasRestantes <= 5 ? "alert-warning" : "alert-info") py-2 d-flex flex-wrap justify-content-between align-items-center gap-2" role="alert">
+            <span>
+                <strong>@pago.Nombre:</strong> paga @Moneda(pago.Pendiente) para no generar intereses.
+                @if (pago.Vencido)
+                {
+                    <span>Venció el @pago.FechaLimite.ToString("dd/MM/yyyy").</span>
+                }
+                else
+                {
+                    <span>Fecha límite: @pago.FechaLimite.ToString("dd/MM/yyyy") (@(pago.DiasRestantes == 0 ? "hoy" : pago.DiasRestantes == 1 ? "mañana" : $"en {pago.DiasRestantes} días")).</span>
+                }
+            </span>
+            <a class="btn btn-sm btn-outline-secondary" href="cuentas/@pago.CuentaId">Ver tarjeta</a>
+        </div>
+    }
+
+    <PendientesRecurrentes OnCambio="Cargar" />
+
     <div class="row g-3 mb-3">
         <div class="col-12 col-md-4">
             <div class="card h-100"><div class="card-body">
@@ -80,6 +100,28 @@ else if (datos != null)
             </div></div>
         </div>
     </div>
+
+    @if (datos.Presupuestos.Items.Count > 0)
+    {
+        <div class="card mb-3"><div class="card-body">
+            <div class="d-flex justify-content-between align-items-center mb-2">
+                <h2 class="seccion-titulo mb-0">Presupuestos del mes</h2>
+                <a href="presupuestos" class="small text-decoration-none">Administrar &rsaquo;</a>
+            </div>
+            <div class="row g-3">
+                @foreach (var item in datos.Presupuestos.Items.Take(6))
+                {
+                    <div class="col-12 col-md-6">
+                        <BarraPresupuesto Item="item" />
+                    </div>
+                }
+            </div>
+            @if (datos.Presupuestos.Items.Count > 6)
+            {
+                <div class="small text-muted mt-2">Se muestran los 6 con más avance de @datos.Presupuestos.Items.Count.</div>
+            }
+        </div></div>
+    }
 
     <div class="row g-3 mb-3">
         <div class="col-12 col-lg-6">

@@ -8,7 +8,7 @@ using Microsoft.EntityFrameworkCore;
 namespace Finanzas.Api.Services;
 
 // Solo Ingreso y Gasto cuentan: transferencias, pagos de tarjeta y préstamos no son ingresos ni gastos.
-public class AnalisisService(FinanzasDbContext context, MsiService msiService)
+public class AnalisisService(FinanzasDbContext context, MsiService msiService, PresupuestoService presupuestoService)
 {
     private const int MesesSerie = 12;
     private const int MesesDeficit = 6;
@@ -50,6 +50,14 @@ public class AnalisisService(FinanzasDbContext context, MsiService msiService)
         modelo.MesesEnDeficit = modelo.Meses.TakeLast(MesesDeficit).Count(m => m.GastaMasQueIngresa);
         modelo.CategoriasEnAumento = CategoriasEnAumento(lineas, inicioMesActual);
         modelo.Alertas = Alertas(modelo, hoy);
+
+        // Los presupuestos rebasados o a punto de rebasarse van primero; si hay alguno, el mensaje de "todo en orden" sobra.
+        var alertasPresupuesto = await AlertasPresupuesto(idUsuario, hoy);
+        if (alertasPresupuesto.Count > 0)
+        {
+            modelo.Alertas.RemoveAll(a => a.Nivel is NivelAlerta.Bien or NivelAlerta.Info);
+            modelo.Alertas.InsertRange(0, alertasPresupuesto);
+        }
 
         return new BaseResponse<AnalisisModel> { Success = true, Data = modelo };
     }
@@ -172,6 +180,23 @@ public class AnalisisService(FinanzasDbContext context, MsiService msiService)
             .OrderByDescending(c => c.Aumento)
             .Take(5)
             .ToList();
+    }
+
+    private async Task<List<AlertaModel>> AlertasPresupuesto(int idUsuario, DateTime hoy)
+    {
+        var resumen = (await presupuestoService.GetResumen(idUsuario, hoy.Year, hoy.Month)).Data;
+        var alertas = new List<AlertaModel>();
+        if (resumen == null) return alertas;
+
+        foreach (var p in resumen.Items.Where(i => i.Nivel != Finanzas.Models.Dashboard.NivelIndicador.Bueno))
+        {
+            alertas.Add(p.Porcentaje >= 100
+                ? new AlertaModel { Nivel = NivelAlerta.Alerta, Titulo = $"Rebasaste tu presupuesto de {p.Categoria}", Detalle = $"Llevas {Formato(p.Gastado)} de {Formato(p.Monto)} ({decimal.Round(p.Porcentaje)}%): te pasaste {Formato(-p.Disponible)}." }
+                : new AlertaModel { Nivel = NivelAlerta.Aviso, Titulo = $"Tu presupuesto de {p.Categoria} va al {decimal.Round(p.Porcentaje)}%", Detalle = $"Llevas {Formato(p.Gastado)} de {Formato(p.Monto)}; te quedan {Formato(p.Disponible)} este mes." });
+        }
+
+        // Primero las alertas, luego los avisos.
+        return alertas.OrderBy(a => a.Nivel == NivelAlerta.Alerta ? 0 : 1).ToList();
     }
 
     private static List<AlertaModel> Alertas(AnalisisModel modelo, DateTime hoy)

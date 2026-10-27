@@ -88,6 +88,10 @@ else if (detalle != null)
                         Día de corte: @c.DiaCorte · Próximo corte: @detalle.ProximoCorte?.ToString("dd/MM/yyyy") (@(detalle.DiasParaCorte == 1 ? "mañana" : $"en {detalle.DiasParaCorte} días")).
                         Lo comprado el día del corte cuenta en el periodo siguiente.
                     </div>
+                    @if (detalle.ProximaFechaLimite != null)
+                    {
+                        <div class="small text-muted">Días para pago: @c.DiasParaPago después del corte · Fecha límite del próximo corte: @(detalle.ProximaFechaLimite?.ToString("dd/MM/yyyy")).</div>
+                    }
                 </div>
                 @if (detalle.CortePendiente)
                 {
@@ -100,6 +104,22 @@ else if (detalle != null)
                 </button>
                 }
             </div>
+
+            @if (detalle.Pago is { Pendiente: > 0 } pago)
+            {
+                <div class="alert @(pago.Vencido ? "alert-danger" : pago.DiasRestantes <= 5 ? "alert-warning" : "alert-info") py-2 small">
+                    <strong>Pago para no generar intereses: @Moneda(pago.Pendiente)</strong>
+                    (de @Moneda(pago.PagoSinIntereses) al corte del @pago.Corte.ToString("dd/MM/yyyy")@(pago.Pagado > 0 ? $", ya pagaste {Moneda(pago.Pagado)}" : "")@(pago.MsiPorFacturar > 0 ? $"; no incluye {Moneda(pago.MsiPorFacturar)} de MSI por facturar" : "")).
+                    @if (pago.Vencido)
+                    {
+                        <span>Venció el @pago.FechaLimite.ToString("dd/MM/yyyy") (hace @(-pago.DiasRestantes) @(pago.DiasRestantes == -1 ? "día" : "días")).</span>
+                    }
+                    else
+                    {
+                        <span>Fecha límite: @pago.FechaLimite.ToString("dd/MM/yyyy") (@(pago.DiasRestantes == 0 ? "hoy" : pago.DiasRestantes == 1 ? "mañana" : $"en {pago.DiasRestantes} días")).</span>
+                    }
+                </div>
+            }
 
             @if (detalle.CortePendiente)
             {

@@ -20,6 +20,7 @@ namespace Finanzas.Data
             builder.Property(x => x.Saldo).HasColumnName(@"Saldo").HasColumnType("decimal(18,2)").HasPrecision(18,2).IsRequired();
             builder.Property(x => x.LimiteCredito).HasColumnName(@"LimiteCredito").HasColumnType("decimal(18,2)").HasPrecision(18,2).IsRequired(false);
             builder.Property(x => x.DiaCorte).HasColumnName(@"DiaCorte").HasColumnType("tinyint").IsRequired(false);
+            builder.Property(x => x.DiasParaPago).HasColumnName(@"DiasParaPago").HasColumnType("tinyint").IsRequired(false);
             builder.Property(x => x.Activa).HasColumnName(@"Activa").HasColumnType("bit").IsRequired();
             builder.Property(x => x.FechaCreacion).HasColumnName(@"FechaCreacion").HasColumnType("datetime2").IsRequired();
             builder.Property(x => x.RowVersion).HasColumnName(@"RowVersion").HasColumnType("timestamp(8)").IsRequired().IsFixedLength().HasMaxLength(8).IsRowVersion().IsConcurrencyToken();

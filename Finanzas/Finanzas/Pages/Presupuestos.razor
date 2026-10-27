@@ -1,0 +1,168 @@
+@page "/presupuestos"
+@attribute [Microsoft.AspNetCore.Authorization.Authorize]
+@using Finanzas.Models.Presupuesto
+
+<PageTitle>Presupuestos - Finanzas</PageTitle>
+
+<div class="page-header">
+    <div>
+        <h1>Presupuestos</h1>
+        <div class="text-muted small">Un límite mensual por categoría. Se repite cada mes hasta que lo cambies.</div>
+    </div>
+    <button class="btn btn-primary" @onclick="Nuevo">+ Nuevo presupuesto</button>
+</div>
+
+<div class="d-flex align-items-center justify-content-center gap-2 mb-3">
+    <button class="btn btn-sm btn-outline-primary" @onclick="() => CambiarMes(-1)" aria-label="Mes anterior" disabled="@cargando">&lsaquo;</button>
+    <div class="mes-actual">@NombreMes(anio, mes)</div>
+    <button class="btn btn-sm btn-outline-primary" @onclick="() => CambiarMes(1)" aria-label="Mes siguiente" disabled="@(cargando || EsMesActual)">&rsaquo;</button>
+</div>
+
+@if (!string.IsNullOrEmpty(error))
+{
+    <div class="alert alert-danger d-flex justify-content-between align-items-center" role="alert">
+        <span>@error</span>
+        <button class="btn btn-sm btn-outline-danger" @onclick="Cargar">Reintentar</button>
+    </div>
+}
+
+@if (cargando && resumen == null)
+{
+    <div class="text-center py-5">
+        <div class="spinner-border" role="status"><span class="visually-hidden">Cargando...</span></div>
+    </div>
+}
+else if (resumen != null)
+{
+    <div class="row g-3 mb-3">
+        <div class="col-12 col-md-4">
+            <div class="card h-100"><div class="card-body">
+                <div class="resumen-etiqueta">Presupuestado al mes</div>
+                <div class="resumen-valor">@Moneda(resumen.TotalPresupuestado)</div>
+            </div></div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card h-100"><div class="card-body">
+                <div class="resumen-etiqueta">Gastado en esas categorías</div>
+                <div class="resumen-valor @(resumen.Disponible < 0 ? "text-danger" : null)">@Moneda(resumen.TotalGastado)</div>
+            </div></div>
+        </div>
+        <div class="col-12 col-md-4">
+            <div class="card h-100"><div class="card-body">
+                <div class="resumen-etiqueta">@(resumen.Disponible >= 0 ? "Disponible" : "Excedido")</div>
+                <div class="resumen-valor @(resumen.Disponible >= 0 ? "text-success" : "text-danger")">@Moneda(Math.Abs(resumen.Disponible))</div>
+                @if (resumen.GastoSinPresupuesto > 0)
+                {
+                    <div class="small text-muted">Además gastaste @Moneda(resumen.GastoSinPresupuesto) en categorías sin presupuesto</div>
+                }
+            </div></div>
+        </div>
+    </div>
+
+    @if (resumen.Items.Count == 0)
+    {
+        <div class="text-center text-muted py-5">
+            Todavía no tienes presupuestos. Crea uno para una categoría (por ejemplo, Comida o Entretenimiento) y te avisaremos cuando te acerques al límite.
+        </div>
+    }
+    else
+    {
+        <div class="card"><div class="card-body">
+            @foreach (var item in resumen.Items)
+            {
+                <div class="py-3 border-bottom presupuesto-fila">
+                    <BarraPresupuesto Item="item" />
+                    <div class="text-end mt-1">
+                        <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => Editar(item)" title="Editar" aria-label="Editar @item.Categoria"><IconoAccion Nombre="editar" /></button>
+                        <button class="btn btn-sm btn-outline-danger" @onclick="() => PedirEliminar(item)" title="Eliminar" aria-label="Eliminar @item.Categoria"><IconoAccion Nombre="eliminar" /></button>
+                    </div>
+                </div>
+            }
+        </div></div>
+    }
+}
+
+@if (modalAbierto)
+{
+    <div class="modal-backdrop fade show"></div>
+    <div class="modal fade show d-block" tabindex="-1" role="dialog" aria-modal="true">
+        <div class="modal-dialog modal-dialog-centered modal-fullscreen-sm-down">
+            <div class="modal-content">
+                <EditForm Model="form" OnSubmit="Guardar">
+                    <div class="modal-header">
+                        <h5 class="modal-title">@(editando ? "Editar presupuesto" : "Nuevo presupuesto")</h5>
+                        <button type="button" class="btn-close" aria-label="Cerrar" @onclick="CerrarModal" disabled="@guardando"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label" for="pre-cat">Categoría</label>
+                            @if (editando)
+                            {
+                                <input id="pre-cat" class="form-control" value="@nombreEditando" disabled />
+                            }
+                            else
+                            {
+                                <InputSelect id="pre-cat" class="form-select" @bind-Value="form.CategoriaId" disabled="@guardando">
+                                    <option value="0">Selecciona...</option>
+                                    @foreach (var c in CategoriasLibres)
+                                    {
+                                        <option value="@c.Id">@c.NombreCompleto</option>
+                                    }
+                                </InputSelect>
+                                @if (!CategoriasLibres.Any())
+                                {
+                                    <div class="form-text">Todas tus categorías de gasto ya tienen presupuesto.</div>
+                                }
+                            }
+                        </div>
+
+                        <div class="mb-3">
+                            <label class="form-label" for="pre-monto">Límite mensual</label>
+                            <InputNumber id="pre-monto" class="form-control" @bind-Value="form.Monto" disabled="@guardando" />
+                        </div>
+
+                        @if (!string.IsNullOrEmpty(errorForm))
+                        {
+                            <div class="alert alert-danger py-2 mb-0" role="alert">@errorForm</div>
+                        }
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-outline-secondary" @onclick="CerrarModal" disabled="@guardando">Cancelar</button>
+                        <button type="submit" class="btn btn-primary" disabled="@guardando">
+                            @if (guardando)
+                            {
+                                <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+                            }
+                            Guardar
+                        </button>
+                    </div>
+                </EditForm>
+            </div>
+        </div>
+    </div>
+}
+
+@if (aEliminar != null)
+{
+    <div class="modal-backdrop fade show"></div>
+    <div class="modal fade show d-block" tabindex="-1" role="dialog" aria-modal="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Eliminar presupuesto</h5>
+                </div>
+                <div class="modal-body">
+                    <p class="mb-0">¿Eliminar el presupuesto de @aEliminar.Categoria? Tus gastos no se modifican.</p>
+                    @if (!string.IsNullOrEmpty(errorEliminar))
+                    {
+                        <div class="alert alert-danger py-2 mt-3 mb-0" role="alert">@errorEliminar</div>
+                    }
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-outline-secondary" @onclick="() => aEliminar = null" disabled="@eliminando">Cancelar</button>
+                    <button class="btn btn-danger" @onclick="Eliminar" disabled="@eliminando">Eliminar</button>
+                </div>
+            </div>
+        </div>
+    </div>
+}

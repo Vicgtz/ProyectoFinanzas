@@ -1,6 +1,7 @@
 using Finanzas.Data;
 using Finanzas.Models;
 using Finanzas.Models.Cuenta;
+using Finanzas.Models.Operacion;
 using Microsoft.EntityFrameworkCore;
 
 namespace Finanzas.Api.Services;
@@ -24,6 +25,7 @@ public class CuentaDetalleService(FinanzasDbContext context)
                 Saldo = cuenta.Saldo,
                 LimiteCredito = cuenta.LimiteCredito,
                 DiaCorte = cuenta.DiaCorte,
+                DiasParaPago = cuenta.DiasParaPago,
                 Activa = cuenta.Activa
             }
         };
@@ -54,6 +56,12 @@ public class CuentaDetalleService(FinanzasDbContext context)
                 .ToListAsync();
 
             detalle.CortePendiente = detalle.Cortes.All(c => c.FechaCorte.Date != ultimo);
+
+            if (cuenta.DiasParaPago != null)
+            {
+                detalle.Pago = await CalcularPago(cuenta, hoy);
+                detalle.ProximaFechaLimite = proximo.AddDays(cuenta.DiasParaPago.Value);
+            }
         }
 
         return new BaseResponse<CuentaDetalleModel> { Success = true, Data = detalle };
@@ -98,6 +106,48 @@ public class CuentaDetalleService(FinanzasDbContext context)
         context.CorteTarjetas.Remove(corte);
         await context.SaveChangesAsync();
         return new BaseResponse { Success = true, Message = "Corte eliminado" };
+    }
+
+    // Pago del último corte. Devuelve null si la cuenta no es de crédito o no tiene días para pago (Pendiente puede ser 0).
+    // Pendiente = (deuda al corte - MSI aún no facturado) - pagos de tarjeta hechos desde el corte
+    // (los pagos anteriores al corte ya bajaron la deuda al corte).
+    public async Task<PagoTarjetaModel?> CalcularPago(Cuenta cuenta, DateTime hoy)
+    {
+        if (cuenta.TipoCuenta != TipoCuentaItem.Credito || cuenta.DiaCorte == null || cuenta.DiasParaPago == null) return null;
+
+        var corte = UltimoCorte(cuenta.DiaCorte.Value, hoy);
+        var deudaAlCorte = Math.Max(0, cuenta.Saldo - await ImporteDesde(cuenta.Id, corte));
+        var pagado = -(await context.MovimientoCuentas.AsNoTracking()
+            .Where(m => m.CuentaId == cuenta.Id && m.Operacion.TipoOperacion == TipoOperacion.PagoTarjeta && m.Operacion.Fecha >= corte)
+            .SumAsync(m => (decimal?)m.Importe) ?? 0);
+
+        // Una compra a MSI sube la deuda por el total, pero el estado de cuenta solo cobra las mensualidades que ya tocaron.
+        var compras = await context.CompraMsis.AsNoTracking()
+            .Where(a => a.CuentaCreditoId == cuenta.Id && a.Operacion.Fecha < corte)
+            .Select(a => new { a.MontoCompra, a.NumeroMeses, a.ImporteMensual, a.FechaPrimeraMensualidad })
+            .ToListAsync();
+        var msiPorFacturar = 0m;
+        foreach (var c in compras)
+        {
+            var fechas = MsiService.Fechas(c.FechaPrimeraMensualidad, c.NumeroMeses, cuenta.DiaCorte);
+            for (var i = 0; i < c.NumeroMeses; i++)
+                if (fechas[i] > corte) msiPorFacturar += MsiService.Importe(c.MontoCompra, c.NumeroMeses, c.ImporteMensual, i);
+        }
+        msiPorFacturar = Math.Min(msiPorFacturar, deudaAlCorte);
+
+        var limite = corte.AddDays(cuenta.DiasParaPago.Value);
+        return new PagoTarjetaModel
+        {
+            CuentaId = cuenta.Id,
+            Nombre = cuenta.Nombre,
+            Corte = corte,
+            FechaLimite = limite,
+            DiasRestantes = (limite - hoy).Days,
+            DeudaAlCorte = deudaAlCorte,
+            MsiPorFacturar = msiPorFacturar,
+            Pagado = pagado,
+            Pendiente = Math.Max(0, deudaAlCorte - msiPorFacturar - pagado)
+        };
     }
 
     // Suma de los movimientos de la cuenta fechados desde `desde` (incluido el día) hasta hoy.

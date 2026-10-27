@@ -35,6 +35,8 @@ namespace Finanzas.Data
         public DbSet<MovimientoCuenta> MovimientoCuentas { get; set; } // MovimientoCuenta
         public DbSet<Operacion> Operacions { get; set; } // Operacion
         public DbSet<Persona> Personas { get; set; } // Persona
+        public DbSet<Presupuesto> Presupuestos { get; set; } // Presupuesto
+        public DbSet<Recurrente> Recurrentes { get; set; } // Recurrente
         public DbSet<SesionUsuario> SesionUsuarios { get; set; } // SesionUsuario
         public DbSet<Usuario> Usuaurios { get; set; } // Usuario
 
@@ -66,6 +68,8 @@ namespace Finanzas.Data
             modelBuilder.ApplyConfiguration(new MovimientoCuentaConfiguration());
             modelBuilder.ApplyConfiguration(new OperacionConfiguration());
             modelBuilder.ApplyConfiguration(new PersonaConfiguration());
+            modelBuilder.ApplyConfiguration(new PresupuestoConfiguration());
+            modelBuilder.ApplyConfiguration(new RecurrenteConfiguration());
             modelBuilder.ApplyConfiguration(new SesionUsuarioConfiguration());
             modelBuilder.ApplyConfiguration(new UsuarioConfiguration());
         }

@@ -20,6 +20,7 @@ public partial class Cuentas
     private string? errorForm;
     private CuentaModel form = new();
     private int? diaCorte; // InputNumber no soporta byte
+    private int? diasPago;
 
     private static readonly List<TipoCuentaItem> Tipos = TipoCuentaItem.GetList();
 
@@ -52,6 +53,7 @@ public partial class Cuentas
         errorForm = null;
         form = new CuentaModel { TipoCuenta = TipoCuentaItem.Debito, Activa = true };
         diaCorte = null;
+        diasPago = null;
         modalAbierto = true;
     }
 
@@ -67,9 +69,11 @@ public partial class Cuentas
             Saldo = cuenta.Saldo,
             LimiteCredito = cuenta.LimiteCredito,
             DiaCorte = cuenta.DiaCorte,
+            DiasParaPago = cuenta.DiasParaPago,
             Activa = cuenta.Activa
         };
         diaCorte = cuenta.DiaCorte;
+        diasPago = cuenta.DiasParaPago;
         modalAbierto = true;
     }
 
@@ -108,6 +112,7 @@ public partial class Cuentas
             Saldo = cuenta.Saldo,
             LimiteCredito = cuenta.LimiteCredito,
             DiaCorte = cuenta.DiaCorte,
+            DiasParaPago = cuenta.DiasParaPago,
             Activa = !cuenta.Activa
         });
 
@@ -130,12 +135,15 @@ public partial class Cuentas
             if (form.LimiteCredito is null or < 0) return "Ingresa un límite de crédito válido";
             if (diaCorte is null or < 1 or > 31) return "El día de corte debe estar entre 1 y 31";
             form.DiaCorte = (byte)diaCorte;
+            if (diasPago is < 1 or > 60) return "Los días para pago deben estar entre 1 y 60";
+            form.DiasParaPago = diasPago == null ? null : (byte)diasPago;
             if (form.Saldo > form.LimiteCredito) return "La deuda no puede superar el límite";
         }
         else
         {
             form.LimiteCredito = null;
             form.DiaCorte = null;
+            form.DiasParaPago = null;
         }
         return null;
     }

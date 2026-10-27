@@ -16,6 +16,12 @@ public class DashboardModel
     public decimal DeudaTarjetas { get; set; }
 
     public List<GastoCategoriaModel> GastosPorCategoria { get; set; } = [];
+
+    // Pagos de tarjeta pendientes (siempre respecto a hoy, sin importar el mes consultado).
+    public List<Finanzas.Models.Cuenta.PagoTarjetaModel> PagosTarjeta { get; set; } = [];
+
+    // Presupuestos del mes consultado (vacío si no hay ninguno).
+    public Finanzas.Models.Presupuesto.PresupuestoResumenModel Presupuestos { get; set; } = new();
     public List<MesResumenModel> Meses { get; set; } = [];
     public List<IndicadorModel> Indicadores { get; set; } = [];
 }

@@ -1,0 +1,129 @@
+@using Finanzas.Models.Operacion
+@using Finanzas.Models.Recurrente
+
+@if (filas.Count > 0 || !string.IsNullOrEmpty(error))
+{
+    <div class="card mb-3 border-warning">
+        <div class="card-body">
+            <h2 class="seccion-titulo mb-1">Por confirmar</h2>
+            <div class="small text-muted mb-2">Operaciones recurrentes cuya fecha ya llegó. Confirma para registrarlas (puedes ajustar el monto) u omite la de este periodo.</div>
+
+            @if (!string.IsNullOrEmpty(error))
+            {
+                <div class="alert alert-danger py-2 small" role="alert">@error</div>
+            }
+
+            @foreach (var f in filas)
+            {
+                var p = f.Pendiente;
+                <div class="d-flex flex-wrap align-items-center gap-2 py-2 border-top">
+                    <div class="flex-grow-1">
+                        <div class="fw-semibold">
+                            @p.Descripcion
+                            <span class="badge @(p.TipoOperacion == TipoOperacion.Ingreso ? "bg-success" : "bg-secondary") ms-1">@p.TipoOperacion</span>
+                        </div>
+                        <div class="small text-muted">
+                            @p.Fecha.ToString("dd/MM/yyyy") · @p.CuentaNombre@(string.IsNullOrEmpty(p.CategoriaNombre) ? "" : $" · {p.CategoriaNombre}")
+                            @if (p.Atrasadas > 0)
+                            {
+                                <span class="text-danger"> · y @p.Atrasadas más atrasada@(p.Atrasadas == 1 ? "" : "s")</span>
+                            }
+                        </div>
+                    </div>
+                    <input type="number" step="0.01" min="0.01" class="form-control form-control-sm" style="width:8.5rem"
+                           aria-label="Monto de @p.Descripcion" @bind="f.Monto" disabled="@(procesando != null)" />
+                    <button class="btn btn-sm btn-primary" @onclick="() => Confirmar(f)" disabled="@(procesando != null)">
+                        @if (procesando == p.RecurrenteId)
+                        {
+                            <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+                        }
+                        Confirmar
+                    </button>
+                    <button class="btn btn-sm btn-outline-secondary" @onclick="() => Omitir(f)" disabled="@(procesando != null)">Omitir</button>
+                </div>
+            }
+        </div>
+    </div>
+}
+
+@code {
+    [Inject] private RecurrenteService RecurrenteApi { get; set; } = default!;
+
+    // Se avisa al padre después de confirmar u omitir (saldos o fechas cambiaron).
+    [Parameter] public EventCallback OnCambio { get; set; }
+
+    private sealed class Fila(RecurrentePendienteModel pendiente)
+    {
+        public RecurrentePendienteModel Pendiente { get; } = pendiente;
+        public decimal Monto { get; set; } = pendiente.Monto;
+    }
+
+    private List<Fila> filas = [];
+    private int? procesando;
+    private string? error;
+
+    protected override async Task OnInitializedAsync() => await Recargar();
+
+    private async Task Recargar()
+    {
+        var respuesta = await RecurrenteApi.GetPendientes();
+        if (respuesta.Success)
+        {
+            var anteriores = filas.ToDictionary(f => (f.Pendiente.RecurrenteId, f.Pendiente.Fecha), f => f.Monto);
+            filas = (respuesta.Data ?? []).Select(p =>
+            {
+                var fila = new Fila(p);
+                if (anteriores.TryGetValue((p.RecurrenteId, p.Fecha), out var monto)) fila.Monto = monto;
+                return fila;
+            }).ToList();
+            error = null;
+        }
+        else
+        {
+            error = respuesta.Message;
+        }
+    }
+
+    private async Task Confirmar(Fila fila)
+    {
+        if (fila.Monto <= 0)
+        {
+            error = "El monto debe ser mayor a cero";
+            return;
+        }
+
+        await Ejecutar(fila, () => RecurrenteApi.Confirmar(new ConfirmarRecurrenteRequest
+        {
+            RecurrenteId = fila.Pendiente.RecurrenteId,
+            Fecha = fila.Pendiente.Fecha,
+            Monto = fila.Monto == fila.Pendiente.Monto ? null : fila.Monto
+        }));
+    }
+
+    private async Task Omitir(Fila fila) =>
+        await Ejecutar(fila, () => RecurrenteApi.Omitir(new OmitirRecurrenteRequest
+        {
+            RecurrenteId = fila.Pendiente.RecurrenteId,
+            Fecha = fila.Pendiente.Fecha
+        }));
+
+    private async Task Ejecutar(Fila fila, Func<Task<Finanzas.Models.BaseResponse>> accion)
+    {
+        procesando = fila.Pendiente.RecurrenteId;
+        error = null;
+        var respuesta = await accion();
+        procesando = null;
+
+        if (!respuesta.Success)
+        {
+            // Si la ocurrencia ya no estaba pendiente conviene refrescar la lista (sin perder el mensaje).
+            var mensaje = respuesta.Message;
+            await Recargar();
+            error = mensaje;
+            return;
+        }
+
+        await Recargar();
+        await OnCambio.InvokeAsync();
+    }
+}

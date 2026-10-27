@@ -85,7 +85,7 @@ public class MsiService(FinanzasDbContext context)
     }
 
     // Fecha de cada mensualidad: una por corte, a partir de la primera. Con corte 31 cae el último día de los meses cortos.
-    private static List<DateTime> Fechas(DateTime primera, int meses, byte? diaCorte)
+    public static List<DateTime> Fechas(DateTime primera, int meses, byte? diaCorte)
     {
         var dia = diaCorte ?? primera.Day;
         var lista = new List<DateTime>(meses);
@@ -98,6 +98,6 @@ public class MsiService(FinanzasDbContext context)
     }
 
     // La última mensualidad absorbe el centavo de redondeo para que la suma sea exactamente el monto de la compra.
-    private static decimal Importe(decimal monto, int meses, decimal mensual, int indice) =>
+    public static decimal Importe(decimal monto, int meses, decimal mensual, int indice) =>
         indice == meses - 1 ? monto - mensual * (meses - 1) : mensual;
 }

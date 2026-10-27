@@ -26,6 +26,8 @@ namespace Finanzas.Data
         DbSet<MovimientoCuenta> MovimientoCuentas { get; set; } // MovimientoCuenta
         DbSet<Operacion> Operacions { get; set; } // Operacion
         DbSet<Persona> Personas { get; set; } // Persona
+        DbSet<Presupuesto> Presupuestos { get; set; } // Presupuesto
+        DbSet<Recurrente> Recurrentes { get; set; } // Recurrente
         DbSet<SesionUsuario> SesionUsuarios { get; set; } // SesionUsuario
         DbSet<Usuario> Usuaurios { get; set; } // Usuario
 
