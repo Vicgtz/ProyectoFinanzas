@@ -1,0 +1,67 @@
+@page "/registro"
+@layout LoginLayout
+
+<PageTitle>Crear cuenta - Finanzas</PageTitle>
+
+<div class="card shadow border-0" style="background-color: rgba(255, 255, 255, 0.92);">
+    <div class="card-body p-4">
+        <img src="Logo.png" alt="Logo de Finanzas" class="d-block mx-auto mb-2" style="width: 120px; height: 120px; object-fit: contain;" />
+        <h1 class="h3 text-center mb-1">Crear cuenta</h1>
+        <p class="text-center text-muted mb-4">Necesitas la clave de registro</p>
+
+        <EditForm Model="modelo" OnValidSubmit="CrearCuenta">
+            <DataAnnotationsValidator />
+
+            <div class="mb-3">
+                <label for="nombre" class="form-label">Nombre</label>
+                <InputText id="nombre" class="form-control" @bind-Value="modelo.Nombre" autocomplete="name" disabled="@cargando" />
+                <ValidationMessage For="() => modelo.Nombre" />
+            </div>
+
+            <div class="mb-3">
+                <label for="correo" class="form-label">Correo</label>
+                <InputText id="correo" type="email" class="form-control" @bind-Value="modelo.Correo" autocomplete="username" disabled="@cargando" />
+                <ValidationMessage For="() => modelo.Correo" />
+            </div>
+
+            <div class="mb-3">
+                <label for="contra" class="form-label">Contraseña</label>
+                <InputText id="contra" type="password" class="form-control" @bind-Value="modelo.Contra" autocomplete="new-password" disabled="@cargando" />
+                <ValidationMessage For="() => modelo.Contra" />
+            </div>
+
+            <div class="mb-3">
+                <label for="confirmar" class="form-label">Confirmar contraseña</label>
+                <InputText id="confirmar" type="password" class="form-control" @bind-Value="modelo.Confirmar" autocomplete="new-password" disabled="@cargando" />
+                <ValidationMessage For="() => modelo.Confirmar" />
+            </div>
+
+            <div class="mb-3">
+                <label for="clave" class="form-label">Clave de registro</label>
+                <InputText id="clave" type="password" class="form-control" @bind-Value="modelo.Clave" autocomplete="off" disabled="@cargando" />
+                <ValidationMessage For="() => modelo.Clave" />
+            </div>
+
+            @if (!string.IsNullOrEmpty(error))
+            {
+                <div class="alert alert-danger py-2" role="alert">@error</div>
+            }
+
+            <button type="submit" class="btn btn-primary w-100" disabled="@cargando">
+                @if (cargando)
+                {
+                    <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+                    <span>Creando...</span>
+                }
+                else
+                {
+                    <span>Crear cuenta</span>
+                }
+            </button>
+
+            <p class="text-center mt-3 mb-0">
+                ¿Ya tienes cuenta? <a href="login">Inicia sesión</a>
+            </p>
+        </EditForm>
+    </div>
+</div>
