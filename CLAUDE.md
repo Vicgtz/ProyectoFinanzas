@@ -31,7 +31,7 @@ La base de datos ya existe (SQL Server local, `FinanzasDB`, autenticación integ
 
 ## Autenticación
 
-Login y registro en `api/Usuario/Login` y `api/Usuario/Registrar` (contraseña con hash propio, `PasswordHasher`). El token JWT trae el claim `IdUsuario`; los controladores lo leen con la propiedad `IdUsuario` y **todo servicio filtra por usuario**. El resto de controladores usan `[Authorize]`. En el cliente, `CustomAuthProvider` y `AuthHttpHandler` guardan el token en localStorage y lo envían en cada llamada.
+Login y registro en `api/Usuario/Login` y `api/Usuario/Registrar` (contraseña con hash propio, `PasswordHasher`). El registro (página `/registro`) exige la clave `Registro:Clave` de la configuración de la API; si está vacía el registro queda deshabilitado. Definirla fuera del repositorio: variable de entorno `Registro__Clave` (en local y en el servidor), o `dotnet user-secrets init` + `dotnet user-secrets set "Registro:Clave" "..."` desde `Finanzas/Finanzas.Api`. El token JWT trae el claim `IdUsuario`; los controladores lo leen con la propiedad `IdUsuario` y **todo servicio filtra por usuario**. El resto de controladores usan `[Authorize]`. En el cliente, `CustomAuthProvider` y `AuthHttpHandler` guardan el token en localStorage y lo envían en cada llamada.
 
 ## Convenciones del código
 

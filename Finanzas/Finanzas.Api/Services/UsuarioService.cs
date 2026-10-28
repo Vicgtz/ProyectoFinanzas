@@ -6,7 +6,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Finanzas.Api.Services;
 
-public class UsuarioService(FinanzasDbContext context, JwtManager jwtManager)
+public class UsuarioService(FinanzasDbContext context, JwtManager jwtManager, IConfiguration configuration)
 {
     private const string CredencialesInvalidas = "Correo o contraseña incorrecta";
 
@@ -48,6 +48,10 @@ public class UsuarioService(FinanzasDbContext context, JwtManager jwtManager)
 
     public async Task<AuthResponse> Registrar(RegistroRequest request)
     {
+        var claveEsperada = configuration["Registro:Clave"];
+        if (string.IsNullOrEmpty(claveEsperada)) return new AuthResponse { Message = "El registro está deshabilitado" };
+        if (!ClaveValida(request.Clave, claveEsperada)) return new AuthResponse { Message = "Clave de registro incorrecta" };
+
         if (string.IsNullOrWhiteSpace(request.Nombre)) return new AuthResponse { Message = "Nombre vacío" };
         if (request.Nombre.Length > 100) return new AuthResponse { Message = "Nombre mayor al permitido" };
         if (string.IsNullOrWhiteSpace(request.Correo)) return new AuthResponse { Message = "Correo vacío" };
@@ -70,6 +74,11 @@ public class UsuarioService(FinanzasDbContext context, JwtManager jwtManager)
 
         return new AuthResponse { Success = true, Message = "Usuario guardado", IdUsuario = usuario.Id, Nombre = usuario.Nombre };
     }
+
+    private static bool ClaveValida(string? recibida, string esperada) =>
+        CryptographicOperations.FixedTimeEquals(
+            SHA256.HashData(Encoding.UTF8.GetBytes(recibida ?? "")),
+            SHA256.HashData(Encoding.UTF8.GetBytes(esperada)));
 
     private static string? Truncar(string? valor, int max) =>
         valor is { Length: > 0 } && valor.Length > max ? valor[..max] : valor;
