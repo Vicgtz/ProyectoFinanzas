@@ -298,6 +298,40 @@ a, .btn-link {
         margin: 0.25rem 0 0 0;
     }
 
+    /* Modales a pantalla completa: alto real visible (dvh, sin barras del navegador), el formulario
+       (EditForm) ocupa el modal, solo el cuerpo hace scroll y el pie con los botones queda siempre visible */
+    .modal-fullscreen-sm-down {
+        height: 100dvh;
+    }
+
+    .modal-fullscreen-sm-down .modal-content {
+        height: 100dvh;
+        overflow: hidden;
+    }
+
+    .modal-fullscreen-sm-down .modal-content > form {
+        display: flex;
+        flex-direction: column;
+        flex: 1 1 auto;
+        min-height: 0;
+    }
+
+    .modal-fullscreen-sm-down .modal-header,
+    .modal-fullscreen-sm-down .modal-footer {
+        flex: 0 0 auto;
+    }
+
+    .modal-fullscreen-sm-down .modal-body {
+        flex: 1 1 auto;
+        min-height: 0;
+        overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
+    }
+
+    .modal-fullscreen-sm-down .modal-footer {
+        padding-bottom: calc(0.75rem + env(safe-area-inset-bottom));
+    }
+
     /* Formulario de movimiento por pasos: pantalla completa, cuerpo con scroll y botones siempre visibles */
     .mov-content {
         height: 100dvh;
@@ -485,4 +519,23 @@ code {
     font-weight: 600;
     color: var(--fz-verde-oscuro);
     margin-bottom: 1rem;
+}
+
+/* Pantallas táctiles: el :hover se queda pegado tras tocar; no pintar filas ni botones en verde */
+@media (hover: none) {
+    .table-hover > tbody > tr:hover > * {
+        --bs-table-bg-state: transparent;
+        --bs-table-color-state: var(--bs-table-color);
+    }
+
+    .btn-outline-primary:hover {
+        color: var(--fz-verde);
+        background-color: transparent;
+        border-color: var(--fz-verde);
+    }
+
+    .btn-outline-primary:active {
+        color: #fff;
+        background-color: var(--fz-verde);
+    }
 }
