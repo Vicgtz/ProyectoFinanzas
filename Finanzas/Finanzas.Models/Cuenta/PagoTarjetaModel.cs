@@ -21,5 +21,8 @@ public class PagoTarjetaModel
     public decimal PagoSinIntereses => Math.Max(0, DeudaAlCorte - MsiPorFacturar);
     public decimal Pagado { get; set; }
     public decimal Pendiente { get; set; }
+
+    // El usuario marcó este corte como pagado (Pendiente queda en 0 hasta el siguiente corte).
+    public bool MarcadoPagado { get; set; }
     public bool Vencido => DiasRestantes < 0;
 }

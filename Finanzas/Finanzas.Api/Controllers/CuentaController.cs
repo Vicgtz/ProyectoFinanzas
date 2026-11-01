@@ -47,6 +47,11 @@ public class CuentaController(CuentaService servicio, CuentaDetalleService detal
     public async Task<IActionResult> RegistrarCorte([FromBody] CorteRequest request) =>
         Ok(await detalle.RegistrarCorte(IdUsuario, request));
 
+    [HttpPost("MarcarPagado")]
+    [ProducesResponseType(typeof(BaseResponse), 200)]
+    public async Task<IActionResult> MarcarPagado([FromQuery] int idCuenta, [FromQuery] bool pagado = true) =>
+        Ok(await detalle.MarcarPagado(IdUsuario, idCuenta, pagado));
+
     [HttpPost("EliminarCorte")]
     [ProducesResponseType(typeof(BaseResponse), 200)]
     public async Task<IActionResult> EliminarCorte([FromQuery] long idCorte) =>

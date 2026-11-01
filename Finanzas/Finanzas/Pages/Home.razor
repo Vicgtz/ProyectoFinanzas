@@ -48,7 +48,10 @@ else if (datos != null)
                     <span>Fecha límite: @pago.FechaLimite.ToString("dd/MM/yyyy") (@(pago.DiasRestantes == 0 ? "hoy" : pago.DiasRestantes == 1 ? "mañana" : $"en {pago.DiasRestantes} días")).</span>
                 }
             </span>
-            <a class="btn btn-sm btn-outline-secondary" href="cuentas/@pago.CuentaId">Ver tarjeta</a>
+            <span class="d-flex gap-2">
+                <button class="btn btn-sm btn-success" @onclick="() => MarcarPagado(pago.CuentaId)">Ya pagué</button>
+                <a class="btn btn-sm btn-outline-secondary" href="cuentas/@pago.CuentaId">Ver tarjeta</a>
+            </span>
         </div>
     }
 

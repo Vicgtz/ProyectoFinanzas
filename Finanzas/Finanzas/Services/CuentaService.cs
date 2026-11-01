@@ -29,6 +29,9 @@ public class CuentaService(HttpClient httpClient, NavigationManager navigation, 
     public Task<BaseResponse> RegistrarCorte(CorteRequest request) =>
         PostResponse("RegistrarCorte", request, error: "Corte no registrado");
 
+    public Task<BaseResponse> MarcarPagado(int idCuenta, bool pagado = true) =>
+        PostResponse("MarcarPagado", query: new Dictionary<string, string?> { ["idCuenta"] = idCuenta.ToString(), ["pagado"] = pagado.ToString() }, error: "No se pudo actualizar el pago");
+
     public Task<BaseResponse> EliminarCorte(long idCorte) =>
         PostResponse("EliminarCorte", query: new Dictionary<string, string?> { ["idCorte"] = idCorte.ToString() }, error: "Corte no eliminado");
 }

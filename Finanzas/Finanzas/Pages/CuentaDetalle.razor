@@ -118,6 +118,14 @@ else if (detalle != null)
                     {
                         <span>Fecha límite: @pago.FechaLimite.ToString("dd/MM/yyyy") (@(pago.DiasRestantes == 0 ? "hoy" : pago.DiasRestantes == 1 ? "mañana" : $"en {pago.DiasRestantes} días")).</span>
                     }
+                    <button class="btn btn-sm btn-success ms-2" @onclick="() => MarcarPagado(true)">Ya pagué</button>
+                </div>
+            }
+            else if (detalle.Pago is { MarcadoPagado: true } marcado)
+            {
+                <div class="alert alert-success py-2 small d-flex flex-wrap justify-content-between align-items-center gap-2">
+                    <span>Pago del corte del @marcado.Corte.ToString("dd/MM/yyyy") marcado como hecho.</span>
+                    <button class="btn btn-sm btn-outline-secondary" @onclick="() => MarcarPagado(false)">Deshacer</button>
                 </div>
             }
 

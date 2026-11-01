@@ -103,6 +103,18 @@ public partial class CuentaDetalle
         await Cargar();
     }
 
+    private async Task MarcarPagado(bool pagado)
+    {
+        errorCorte = null;
+        var respuesta = await CuentaApi.MarcarPagado(Id, pagado);
+        if (!respuesta.Success)
+        {
+            errorCorte = respuesta.Message;
+            return;
+        }
+        await Cargar();
+    }
+
     private async Task EliminarCorte(CorteModel corte)
     {
         errorCorte = null;

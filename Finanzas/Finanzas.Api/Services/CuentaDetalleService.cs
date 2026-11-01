@@ -135,6 +135,7 @@ public class CuentaDetalleService(FinanzasDbContext context)
         }
         msiPorFacturar = Math.Min(msiPorFacturar, deudaAlCorte);
 
+        var marcado = cuenta.CortePagado >= corte;
         var limite = corte.AddDays(cuenta.DiasParaPago.Value);
         return new PagoTarjetaModel
         {
@@ -146,8 +147,29 @@ public class CuentaDetalleService(FinanzasDbContext context)
             DeudaAlCorte = deudaAlCorte,
             MsiPorFacturar = msiPorFacturar,
             Pagado = pagado,
-            Pendiente = Math.Max(0, deudaAlCorte - msiPorFacturar - pagado)
+            Pendiente = marcado ? 0 : Math.Max(0, deudaAlCorte - msiPorFacturar - pagado),
+            MarcadoPagado = marcado
         };
+    }
+
+    // "Ya pagué": oculta el aviso de pago del último corte (útil si el pago no se registró como operación en la app).
+    public async Task<BaseResponse> MarcarPagado(int idUsuario, int idCuenta, bool pagado)
+    {
+        var cuenta = await context.Cuentas.FirstOrDefaultAsync(a => a.Id == idCuenta && a.UsuarioId == idUsuario);
+        if (cuenta == null) return new BaseResponse { Message = "Cuenta no existe" };
+        if (cuenta.TipoCuenta != TipoCuentaItem.Credito || cuenta.DiaCorte == null || cuenta.DiasParaPago == null)
+            return new BaseResponse { Message = "La tarjeta no tiene fecha límite de pago" };
+
+        cuenta.CortePagado = pagado ? UltimoCorte(cuenta.DiaCorte.Value, DateTime.Today) : null;
+        try
+        {
+            await context.SaveChangesAsync();
+        }
+        catch (DbUpdateConcurrencyException)
+        {
+            return new BaseResponse { Message = "La cuenta cambió, intenta de nuevo" };
+        }
+        return new BaseResponse { Success = true, Message = pagado ? "Pago marcado como hecho" : "Marca de pago quitada" };
     }
 
     // Suma de los movimientos de la cuenta fechados desde `desde` (incluido el día) hasta hoy.

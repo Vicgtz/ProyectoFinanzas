@@ -14,6 +14,7 @@ public partial class Home
 
     [Inject] private AuthenticationStateProvider AuthState { get; set; } = default!;
     [Inject] private DashboardService DashboardApi { get; set; } = default!;
+    [Inject] private CuentaService CuentaApi { get; set; } = default!;
 
     private string Nombre { get; set; } = "";
     private bool movimientoAbierto;
@@ -43,6 +44,17 @@ public partial class Home
         else
             error = respuesta.Message;
         cargando = false;
+    }
+
+    private async Task MarcarPagado(int idCuenta)
+    {
+        var respuesta = await CuentaApi.MarcarPagado(idCuenta);
+        if (!respuesta.Success)
+        {
+            error = respuesta.Message;
+            return;
+        }
+        await Cargar();
     }
 
     private async Task CambiarMes(int delta)
