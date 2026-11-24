@@ -1,6 +1,6 @@
-# Finanzas
+# Finanzas (marca Finexa)
 
-Aplicación de finanzas personales en español (pesos mexicanos): ingresos, gastos, cuentas, tarjetas de crédito con corte y meses sin intereses (MSI), préstamos entre personas y análisis. Una API en .NET 9 con SQL Server y un cliente Blazor WebAssembly.
+El producto se muestra al usuario como **Finexa** ("Tu dinero, en control"); el código, los proyectos y los namespaces siguen llamándose `Finanzas`. Aplicación de finanzas personales en español (pesos mexicanos): ingresos, gastos, cuentas, tarjetas de crédito con corte y meses sin intereses (MSI), préstamos entre personas y análisis. Una API en .NET 9 con SQL Server y un cliente Blazor WebAssembly.
 
 ## Estructura
 
@@ -25,6 +25,7 @@ La base de datos ya existe (SQL Server local, `FinanzasDB`, autenticación integ
 - Las funciones de fecha límite de pago, recurrentes y presupuestos se escribieron sin poder compilar (sin acceso a NuGet): si `dotnet build` marca algo, corregirlo primero.
 - `.claude/launch.json` define las configuraciones `api` y `web` para la vista previa de la herramienta.
 - Cuidado: no compilar la solución mientras la web o la API están corriendo; los archivos quedan bloqueados o la web sirve archivos obsoletos. Detener, compilar y volver a iniciar.
+- Con `dotnet run` (sin `watch`) los cambios en `.razor`, `.razor.css` y `wwwroot` no se ven hasta reiniciar la web; el navegador además cachea `app.css` y `tokens.css`, por eso `index.html` los carga con `?v=N` (subir N al cambiarlos).
 - El CORS de la API solo admite `http://localhost:5150` y `https://localhost:7132`.
 - No hay pruebas automatizadas; se verifica con la API y la interfaz.
 - Usuario de prueba solo para desarrollo local: ver `Finanzas/Finanzas.Api/dev-user.txt`. Ese archivo no está en `.gitignore`: no poner ahí contraseñas reales.
@@ -38,11 +39,24 @@ Login y registro en `api/Usuario/Login` y `api/Usuario/Registrar` (contraseña c
 - **Servicios con primary constructor** (`class XService(FinanzasDbContext context)`); controladores sin lógica que devuelven `Ok(await servicio.Metodo(IdUsuario, ...))`.
 - **Respuestas**: siempre `BaseResponse` / `BaseResponse<T>` con `Success`, `Message` y `Data` (o `Id`). Los errores de negocio se devuelven como `Success = false` con un mensaje en español, no como excepciones ni códigos HTTP.
 - **Cliente**: cada área tiene un servicio que hereda de `HttpService` (`GetData<T>`, `PostResponse`); se registran en `Program.cs`.
-- **Interfaz**: páginas `.razor` con code-behind `.razor.cs` (clase `partial`); modales hechos a mano con clases de Bootstrap; formulario de movimientos reutilizable en `Components/MovimientoForm`. Estilos globales en `wwwroot/css/app.css` (variables `--fz-*`, tema verde) y CSS con alcance por página (`*.razor.css`).
+- **Interfaz**: páginas `.razor` con code-behind `.razor.cs` (clase `partial`); modales hechos a mano con clases de Bootstrap; formulario de movimientos reutilizable en `Components/MovimientoForm`. Estilos globales en `wwwroot/css/tokens.css` (variables) y `wwwroot/css/app.css` (componentes base), y CSS con alcance por página (`*.razor.css`). Ver "Diseño visual".
 - **Formato**: usar `Finanzas.Services.Formato.Moneda` para importes (es-MX). En estilos inline, formatear números con `CultureInfo.InvariantCulture` (la cultura es-MX usa coma decimal y rompe el CSS).
 - **Gráficas**: SVG/CSS propio, sin librerías.
 - En Razor, un parámetro `string` con comillas simples se toma como texto literal: usar `Param="@variable"`.
 - Textos de la interfaz y mensajes de error en español.
+
+## Diseño visual (Finexa)
+
+La especificación del rediseño está en `Finexa_Redisenio_Caracteristicas.md` y el inventario de la Fase 1 en `Finexa_Fase1_Inventario.md` (raíz del repositorio). El rediseño es solo visual: no cambia API, datos ni reglas.
+
+- **Tokens** (`wwwroot/css/tokens.css`): la paleta de marca está en `--fx-*` (`#104E46`, `#168875`, `#36B985`, `#EAF5F1`, `#202A32`); los roles que usa la interfaz son `--fz-*` (superficie, texto, borde, título, enlace, ingreso, gasto, `--fz-cat-1..8` para gráficas…). **No poner colores hexadecimales en componentes**: usar tokens (en SVG inline, `style="stroke:var(--…)"`, no el atributo). El verde de acción, ingreso y gasto están oscurecidos respecto a la marca para cumplir contraste AA con texto blanco.
+- **Tema claro/oscuro**: atributo `data-bs-theme` en `<html>`. Un script en `index.html` lo aplica antes de pintar y expone `window.finexaTema` (`obtener`/`establecer`); la preferencia (`claro`, `oscuro`, `sistema`) se guarda en `localStorage` (`finexa-tema`), solo en el dispositivo. El selector está en `Pages/Configuracion.razor`. Todo estilo nuevo debe verse bien en ambos temas.
+- **Logotipos** (`wwwroot`): `finexa-logo.png` (fondo claro), `finexa-logo-oscuro.png` (texto blanco), `finexa-isotipo.png`, y variantes monocromáticas `finexa-*-mono*.png`. Se alternan por tema con las clases `.logo-claro` / `.logo-oscuro`. Son PNG con transparencia; no hay SVG.
+- **Breakpoints**: móvil < 576 px, tableta 576–991 px, escritorio ≥ 992 px. Escritorio: menú lateral de 250 px; tableta: menú compacto de iconos; móvil: sin menú lateral y con navegación inferior (`Layout/NavInferior`: Inicio, Movimientos, **Agregar**, Cuentas, Más). Debajo de 992 px las tablas `.table-cards` se convierten en tarjetas (requieren `data-label` en cada `td`; la columna de botones lleva clase `acciones`).
+- **Agregar movimiento**: `MainLayout` aloja un `MovimientoForm` global (botón del encabezado en escritorio y botón central en móvil); al guardar incrementa una clave sobre `@Body` para que la página actual recargue sus datos.
+- **Iconos**: `Components/IconoNav` (navegación, `currentColor`) e `IconoAccion` (acciones de tabla); sin librerías de iconos.
+- **Accesibilidad**: foco visible global, enlace "Saltar al contenido", áreas táctiles de 44 px en móvil/tableta, `prefers-reduced-motion`. Los modales hechos a mano aún no atrapan el foco ni cierran con Escape.
+- **Pantalla de carga**: marcado `.cargando` dentro de `#app` en `index.html`; usa las variables de progreso de Blazor.
 
 ## Modelo financiero
 
