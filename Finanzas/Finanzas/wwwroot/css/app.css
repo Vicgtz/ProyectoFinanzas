@@ -456,38 +456,6 @@ a, .btn-link {
         content: "An error has occurred."
     }
 
-.loading-progress {
-    position: relative;
-    display: block;
-    width: 8rem;
-    height: 8rem;
-    margin: 20vh auto 1rem auto;
-}
-
-    .loading-progress circle {
-        fill: none;
-        stroke: var(--fz-borde);
-        stroke-width: 0.6rem;
-        transform-origin: 50% 50%;
-        transform: rotate(-90deg);
-    }
-
-        .loading-progress circle:last-child {
-            stroke: var(--fz-verde);
-            stroke-dasharray: calc(3.141 * var(--blazor-load-percentage, 0%) * 0.8), 500%;
-            transition: stroke-dasharray 0.05s ease-in-out;
-        }
-
-.loading-progress-text {
-    position: absolute;
-    text-align: center;
-    font-weight: bold;
-    inset: calc(20vh + 3.25rem) 0 auto 0.2rem;
-}
-
-    .loading-progress-text:after {
-        content: var(--blazor-load-percentage-text, "Loading");
-    }
 
 code {
     color: #c02d76;
@@ -692,3 +660,54 @@ code { color: var(--fz-gasto); }
 [data-bs-theme="dark"] .badge.bg-danger,
 [data-bs-theme="dark"] .badge.bg-info,
 [data-bs-theme="dark"] .badge.bg-secondary { color: #141B21; }
+
+/* Pantalla de carga (antes de que arranque Blazor): isotipo con pulso, texto y avance */
+.cargando {
+    position: fixed;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.1rem;
+    background: var(--fz-fondo);
+    color: var(--fz-texto-suave);
+}
+
+.cargando-logo {
+    width: 88px;
+    height: auto;
+    animation: cargando-pulso 1.8s ease-in-out infinite;
+}
+
+.cargando-texto {
+    font-size: 1.05rem;
+    font-weight: 500;
+    letter-spacing: 0.01em;
+}
+
+.cargando-pct::after {
+    content: " " var(--blazor-load-percentage-text, "...");
+}
+
+.cargando-barra {
+    width: 11rem;
+    height: 4px;
+    border-radius: 2px;
+    background: var(--fz-borde);
+    overflow: hidden;
+}
+
+.cargando-barra span {
+    display: block;
+    height: 100%;
+    width: var(--blazor-load-percentage, 0%);
+    border-radius: 2px;
+    background: linear-gradient(90deg, var(--fx-verde-esmeralda), var(--fx-verde-crecimiento));
+    transition: width 0.2s ease-out;
+}
+
+@keyframes cargando-pulso {
+    0%, 100% { transform: scale(1); opacity: 0.85; }
+    50% { transform: scale(1.06); opacity: 1; }
+}
