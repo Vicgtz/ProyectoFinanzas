@@ -199,8 +199,8 @@ a, .btn-link {
 
 }
 
-/* Tablas como tarjetas en móvil y tableta (con el menú lateral el espacio es corto) */
-@media (max-width: 991.98px) {
+/* Tablas como tarjetas hasta 1199 px: con el menú lateral de 250 px, las tablas anchas se cortan antes */
+@media (max-width: 1199.98px) {
     .table-responsive {
         border: 0;
         border-radius: 0;
