@@ -38,6 +38,13 @@ main {
 
 .marca-movil { display: none; }
 
+.btn-agregar-top {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-right: auto;
+}
+
 .usuario {
     display: flex;
     align-items: center;
@@ -88,7 +95,7 @@ article.content {
 
     .marca-movil { display: flex; align-items: center; min-height: 2.75rem; }
     .marca-movil img { height: 1.9rem; width: auto; }
-    .nombre, .btn-salir { display: none; }
+    .nombre, .btn-salir, .btn-agregar-top { display: none; }
 
     article.content {
         padding-left: 1rem;

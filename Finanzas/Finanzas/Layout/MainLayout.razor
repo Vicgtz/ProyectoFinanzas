@@ -14,6 +14,9 @@
                 <img src="finexa-logo-oscuro.png" alt="Finexa" class="logo-oscuro" />
             </a>
             <AuthorizeView>
+                <button type="button" class="btn btn-primary btn-agregar-top" @onclick="() => agregarAbierto = true">
+                    <IconoNav Nombre="agregar" Tamano="16" /> Agregar
+                </button>
                 <div class="usuario">
                     <span class="avatar" aria-hidden="true">@Inicial(context.User.Identity?.Name)</span>
                     <span class="nombre">@context.User.Identity?.Name</span>
