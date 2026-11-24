@@ -1,23 +1,34 @@
 @inherits LayoutComponentBase
 
 <div class="page">
-    <div class="sidebar">
+    <aside class="sidebar">
         <NavMenu />
-    </div>
+    </aside>
 
     <main>
-        <div class="top-row px-4">
+        <header class="top-row">
+            <a href="" class="marca-movil" aria-label="Finexa">
+                <img src="finexa-logo.png" alt="Finexa" class="logo-claro" />
+                <img src="finexa-logo-oscuro.png" alt="Finexa" class="logo-oscuro" />
+            </a>
             <AuthorizeView>
                 <div class="usuario">
                     <span class="avatar" aria-hidden="true">@Inicial(context.User.Identity?.Name)</span>
                     <span class="nombre">@context.User.Identity?.Name</span>
                 </div>
-                <button class="btn btn-sm btn-outline-primary" @onclick="CerrarSesion">Salir</button>
+                <button class="btn btn-sm btn-outline-primary btn-salir" @onclick="CerrarSesion">Salir</button>
             </AuthorizeView>
-        </div>
+        </header>
 
-        <article class="content px-4">
+        <article class="content" @key="refresco">
             @Body
         </article>
     </main>
+
+    <NavInferior OnAgregar="() => agregarAbierto = true" OnSalir="CerrarSesion" />
 </div>
+
+@if (agregarAbierto)
+{
+    <MovimientoForm OnGuardado="MovimientoGuardado" OnCancelado="() => agregarAbierto = false" />
+}

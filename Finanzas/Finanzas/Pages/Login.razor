@@ -1,12 +1,13 @@
 @page "/login"
 @layout LoginLayout
 
-<PageTitle>Iniciar sesión - Finanzas</PageTitle>
+<PageTitle>Iniciar sesión - Finexa</PageTitle>
 
-<div class="card shadow border-0" style="background-color: rgba(255, 255, 255, 0.92);">
+<div class="card shadow border-0 login-card">
     <div class="card-body p-4">
-        <img src="Logo.png" alt="Logo de Finanzas" class="d-block mx-auto mb-2" style="width: 120px; height: 120px; object-fit: contain;" />
-        <h1 class="h3 text-center mb-1">Finanzas</h1>
+        <img src="finexa-logo.png" alt="Finexa" class="d-block mx-auto mb-2 login-logo logo-claro" />
+        <img src="finexa-logo-oscuro.png" alt="Finexa" class="d-block mx-auto mb-2 login-logo logo-oscuro" />
+        <h1 class="h4 text-center mb-1">Tu dinero, en control</h1>
         <p class="text-center text-muted mb-4">Inicia sesión para continuar</p>
 
         <EditForm Model="modelo" OnValidSubmit="IniciarSesion">

@@ -1,0 +1,47 @@
+@* Navegación inferior para móvil: Inicio, Movimientos, Agregar (destacado), Cuentas y Más. *@
+<nav class="nav-inferior" aria-label="Navegación principal">
+    <NavLink class="ni-item" href="" Match="NavLinkMatch.All" @onclick="Cerrar"><IconoNav Nombre="inicio" /><span>Inicio</span></NavLink>
+    <NavLink class="ni-item" href="movimientos" @onclick="Cerrar"><IconoNav Nombre="movimientos" /><span>Movimientos</span></NavLink>
+    <button type="button" class="ni-agregar" aria-label="Agregar movimiento" @onclick="Agregar"><IconoNav Nombre="agregar" Tamano="26" /></button>
+    <NavLink class="ni-item" href="cuentas" @onclick="Cerrar"><IconoNav Nombre="cuentas" /><span>Cuentas</span></NavLink>
+    <button type="button" class="ni-item @(masAbierto ? "abierto" : "")" aria-expanded="@masAbierto" aria-controls="hoja-mas" @onclick="() => masAbierto = !masAbierto"><IconoNav Nombre="mas" /><span>Más</span></button>
+</nav>
+
+@if (masAbierto)
+{
+    <div class="hoja-fondo" @onclick="Cerrar"></div>
+    <div class="hoja-mas" id="hoja-mas" role="dialog" aria-label="Más opciones">
+        <div class="hoja-asa" aria-hidden="true"></div>
+        <div class="hoja-grid">
+            <NavLink class="hoja-item" href="recurrentes" @onclick="Cerrar"><IconoNav Nombre="recurrentes" Tamano="24" /><span>Recurrentes</span></NavLink>
+            <NavLink class="hoja-item" href="presupuestos" @onclick="Cerrar"><IconoNav Nombre="presupuestos" Tamano="24" /><span>Presupuestos</span></NavLink>
+            <NavLink class="hoja-item" href="msi" @onclick="Cerrar"><IconoNav Nombre="msi" Tamano="24" /><span>Meses sin intereses</span></NavLink>
+            <NavLink class="hoja-item" href="analisis" @onclick="Cerrar"><IconoNav Nombre="analisis" Tamano="24" /><span>Análisis</span></NavLink>
+            <NavLink class="hoja-item" href="categorias" @onclick="Cerrar"><IconoNav Nombre="categorias" Tamano="24" /><span>Categorías</span></NavLink>
+            <NavLink class="hoja-item" href="personas" @onclick="Cerrar"><IconoNav Nombre="personas" Tamano="24" /><span>Personas</span></NavLink>
+            <NavLink class="hoja-item" href="configuracion" @onclick="Cerrar"><IconoNav Nombre="config" Tamano="24" /><span>Configuración</span></NavLink>
+            <button type="button" class="hoja-item" @onclick="Salir"><IconoNav Nombre="salir" Tamano="24" /><span>Cerrar sesión</span></button>
+        </div>
+    </div>
+}
+
+@code {
+    [Parameter] public EventCallback OnAgregar { get; set; }
+    [Parameter] public EventCallback OnSalir { get; set; }
+
+    private bool masAbierto;
+
+    private void Cerrar() => masAbierto = false;
+
+    private async Task Agregar()
+    {
+        masAbierto = false;
+        await OnAgregar.InvokeAsync();
+    }
+
+    private async Task Salir()
+    {
+        masAbierto = false;
+        await OnSalir.InvokeAsync();
+    }
+}

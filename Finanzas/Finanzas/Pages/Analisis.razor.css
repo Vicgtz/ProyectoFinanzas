@@ -3,12 +3,12 @@
     border-left-width: 5px;
     border-radius: 10px;
     padding: 0.7rem 1rem;
-    background: #fff;
+    background: var(--fz-superficie);
     height: 100%;
 }
 
 .alerta-fila.nivel-bien {
-    border-left-color: #2fa37d;
+    border-left-color: var(--fz-ingreso);
 }
 
 .alerta-fila.nivel-aviso {
@@ -16,11 +16,11 @@
 }
 
 .alerta-fila.nivel-alerta {
-    border-left-color: #d9534f;
+    border-left-color: var(--fz-gasto);
 }
 
 .alerta-fila.nivel-info {
-    border-left-color: #b8c4c0;
+    border-left-color: var(--fz-neutro);
 }
 
 .alerta-titulo {
@@ -29,14 +29,14 @@
 
 .alerta-detalle {
     font-size: 0.88rem;
-    color: #5f706b;
+    color: var(--fz-texto-suave);
 }
 
 .mini-dato {
     border: 1px solid var(--fz-borde);
     border-radius: 10px;
     padding: 0.6rem 0.85rem;
-    background: #fff;
+    background: var(--fz-superficie);
     height: 100%;
 }
 
@@ -96,19 +96,19 @@
 }
 
 .seg.otros {
-    background: #9aa8a3;
+    background: var(--fz-neutro);
 }
 
 .analisis-etiqueta {
     font-size: 0.75rem;
-    color: #6b7c77;
+    color: var(--fz-texto-suave);
     text-align: center;
     padding-top: 0.25rem;
     border-top: 1px solid var(--fz-borde);
 }
 
 .analisis-mes.deficit .analisis-etiqueta {
-    color: #d9534f;
+    color: var(--fz-gasto);
     font-weight: 600;
 }
 

@@ -1,61 +1,20 @@
-<div class="top-row ps-3 navbar navbar-dark">
-    <div class="container-fluid">
-        <a class="navbar-brand d-flex align-items-center" href="">
-            <img src="Logo.png" alt="" class="brand-logo" />
-            <span>Finanzas</span>
-        </a>
-        <button title="Menú de navegación" class="navbar-toggler" @onclick="ToggleNavMenu">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-    </div>
-</div>
+<a class="marca" href="" title="Finexa">
+    <img src="finexa-logo-oscuro.png" alt="Finexa" class="marca-completa" />
+    <img src="finexa-isotipo.png" alt="Finexa" class="marca-iso" />
+</a>
 
-<div class="@NavMenuCssClass nav-scrollable" @onclick="ToggleNavMenu">
-    <nav class="nav flex-column">
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="" Match="NavLinkMatch.All">
-                <span class="bi bi-house-door-fill-nav-menu" aria-hidden="true"></span> Inicio
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="movimientos">
-                <span class="bi bi-arrow-left-right-nav-menu" aria-hidden="true"></span> Movimientos
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="cuentas">
-                <span class="bi bi-wallet-nav-menu" aria-hidden="true"></span> Cuentas
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="recurrentes">
-                <span class="bi bi-arrow-repeat-nav-menu" aria-hidden="true"></span> Recurrentes
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="presupuestos">
-                <span class="bi bi-budget-nav-menu" aria-hidden="true"></span> Presupuestos
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="msi">
-                <span class="bi bi-calendar-check-nav-menu" aria-hidden="true"></span> Meses sin intereses
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="analisis">
-                <span class="bi bi-graph-up-nav-menu" aria-hidden="true"></span> Análisis
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="categorias">
-                <span class="bi bi-tag-nav-menu" aria-hidden="true"></span> Categorías
-            </NavLink>
-        </div>
-        <div class="nav-item px-3">
-            <NavLink class="nav-link" href="personas">
-                <span class="bi bi-people-nav-menu" aria-hidden="true"></span> Personas
-            </NavLink>
-        </div>
-    </nav>
-</div>
+<nav class="nav flex-column" aria-label="Navegación principal">
+    <NavLink class="nav-link" href="" Match="NavLinkMatch.All" title="Inicio"><IconoNav Nombre="inicio" /><span class="nav-texto">Inicio</span></NavLink>
+    <NavLink class="nav-link" href="movimientos" title="Movimientos"><IconoNav Nombre="movimientos" /><span class="nav-texto">Movimientos</span></NavLink>
+    <NavLink class="nav-link" href="cuentas" title="Cuentas"><IconoNav Nombre="cuentas" /><span class="nav-texto">Cuentas</span></NavLink>
+    <NavLink class="nav-link" href="recurrentes" title="Recurrentes"><IconoNav Nombre="recurrentes" /><span class="nav-texto">Recurrentes</span></NavLink>
+    <NavLink class="nav-link" href="presupuestos" title="Presupuestos"><IconoNav Nombre="presupuestos" /><span class="nav-texto">Presupuestos</span></NavLink>
+    <NavLink class="nav-link" href="msi" title="Meses sin intereses"><IconoNav Nombre="msi" /><span class="nav-texto">Meses sin intereses</span></NavLink>
+    <NavLink class="nav-link" href="analisis" title="Análisis"><IconoNav Nombre="analisis" /><span class="nav-texto">Análisis</span></NavLink>
+    <NavLink class="nav-link" href="categorias" title="Categorías"><IconoNav Nombre="categorias" /><span class="nav-texto">Categorías</span></NavLink>
+    <NavLink class="nav-link" href="personas" title="Personas"><IconoNav Nombre="personas" /><span class="nav-texto">Personas</span></NavLink>
+</nav>
+
+<nav class="nav flex-column nav-pie" aria-label="Configuración">
+    <NavLink class="nav-link" href="configuracion" title="Configuración"><IconoNav Nombre="config" /><span class="nav-texto">Configuración</span></NavLink>
+</nav>

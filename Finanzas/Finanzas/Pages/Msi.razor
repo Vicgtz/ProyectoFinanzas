@@ -2,7 +2,7 @@
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
 @using Finanzas.Models.Msi
 
-<PageTitle>Meses sin intereses - Finanzas</PageTitle>
+<PageTitle>Meses sin intereses - Finexa</PageTitle>
 
 <div class="page-header">
     <div>
@@ -74,7 +74,7 @@ else if (datos != null)
 
     @if (PlanesVisibles.Count == 0)
     {
-        <div class="text-center text-muted py-5">No hay compras a meses sin intereses para mostrar.</div>
+        <div class="estado-vacio">No hay compras a meses sin intereses para mostrar.</div>
     }
     else
     {

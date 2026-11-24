@@ -25,13 +25,13 @@
 
 .msi-importe {
     font-size: 0.7rem;
-    color: #6b7c77;
+    color: var(--fz-texto-suave);
     min-height: 1rem;
 }
 
 .msi-etiqueta {
     font-size: 0.75rem;
-    color: #6b7c77;
+    color: var(--fz-texto-suave);
     padding-top: 0.25rem;
     border-top: 1px solid var(--fz-borde);
     width: 100%;

@@ -1,18 +1,43 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 
 <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Finanzas</title>
+    <title>Finexa</title>
     <base href="/" />
-    <meta name="theme-color" content="#0f4c45" />
+    <meta name="theme-color" content="#104E46" />
+    <script>
+        // Tema (claro / oscuro / sistema): se aplica antes de pintar para evitar parpadeo y se guarda en este dispositivo.
+        (function () {
+            var clave = 'finexa-tema';
+            var oscuroSistema = window.matchMedia('(prefers-color-scheme: dark)');
+            function preferencia() {
+                try { return localStorage.getItem(clave) || 'sistema'; } catch (e) { return 'sistema'; }
+            }
+            function aplicar() {
+                var p = preferencia();
+                var oscuro = p === 'oscuro' || (p === 'sistema' && oscuroSistema.matches);
+                document.documentElement.setAttribute('data-bs-theme', oscuro ? 'dark' : 'light');
+            }
+            aplicar();
+            oscuroSistema.addEventListener('change', aplicar);
+            window.finexaTema = {
+                obtener: preferencia,
+                establecer: function (p) {
+                    try { localStorage.setItem(clave, p); } catch (e) { }
+                    aplicar();
+                }
+            };
+        })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
-    <link rel="stylesheet" href="css/app.css?v=2" />
-    <link rel="icon" type="image/png" href="Logo.png" />
+    <link rel="stylesheet" href="css/tokens.css?v=3" />
+    <link rel="stylesheet" href="css/app.css?v=6" />
+    <link rel="icon" type="image/png" href="favicon.png" />
     <link href="Finanzas.styles.css" rel="stylesheet" />
 </head>
 

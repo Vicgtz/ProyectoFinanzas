@@ -1,0 +1,51 @@
+@page "/configuracion"
+@inject IJSRuntime JS
+
+<PageTitle>Configuración - Finexa</PageTitle>
+
+<div class="page-header">
+    <h1>Configuración</h1>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <h2 class="seccion-titulo">Apariencia</h2>
+        <p class="text-muted small">Elige el tema de Finexa. Se guarda en este dispositivo.</p>
+
+        <div class="opciones-tema" role="radiogroup" aria-label="Tema">
+            @foreach (var o in Opciones)
+            {
+                <button type="button" class="opcion-tema @(tema == o.Clave ? "activa" : "")" role="radio" aria-checked="@(tema == o.Clave)" @onclick="() => Elegir(o.Clave)">
+                    <IconoNav Nombre="@o.Icono" Tamano="28" />
+                    <span>@o.Texto</span>
+                </button>
+            }
+        </div>
+    </div>
+</div>
+
+@code {
+    private record Opcion(string Clave, string Texto, string Icono);
+
+    private static readonly Opcion[] Opciones =
+    [
+        new("claro", "Claro", "sol"),
+        new("oscuro", "Oscuro", "luna"),
+        new("sistema", "Automático", "sistema")
+    ];
+
+    private string tema = "sistema";
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (!firstRender) return;
+        tema = await JS.InvokeAsync<string>("finexaTema.obtener");
+        StateHasChanged();
+    }
+
+    private async Task Elegir(string clave)
+    {
+        tema = clave;
+        await JS.InvokeVoidAsync("finexaTema.establecer", clave);
+    }
+}

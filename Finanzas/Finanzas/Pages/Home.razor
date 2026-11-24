@@ -2,7 +2,7 @@
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
 @using Finanzas.Models.Dashboard
 
-<PageTitle>Inicio - Finanzas</PageTitle>
+<PageTitle>Inicio - Finexa</PageTitle>
 
 <div class="page-header">
     <div>
@@ -138,13 +138,13 @@ else if (datos != null)
                 {
                     <div class="dona-fila">
                         <svg viewBox="0 0 42 42" class="dona" role="img" aria-label="Gastos por categoría">
-                            <circle cx="21" cy="21" r="15.9155" fill="none" stroke="#e9f1ee" stroke-width="6"></circle>
+                            <circle cx="21" cy="21" r="15.9155" fill="none" style="stroke:var(--fz-borde)" stroke-width="6"></circle>
                             @{ var acumulado = 0m; }
                             @for (var i = 0; i < datos.GastosPorCategoria.Count; i++)
                             {
                                 var g = datos.GastosPorCategoria[i];
                                 var porcentaje = datos.Gastos == 0 ? 0 : g.Monto / datos.Gastos * 100;
-                                <circle cx="21" cy="21" r="15.9155" fill="none" stroke="@Color(i)" stroke-width="6"
+                                <circle cx="21" cy="21" r="15.9155" fill="none" style="stroke:@Color(i)" stroke-width="6"
                                         stroke-dasharray="@Num(porcentaje) @Num(100 - porcentaje)"
                                         stroke-dashoffset="@Num(25 - acumulado)"></circle>
                                 acumulado += porcentaje;
@@ -184,7 +184,7 @@ else if (datos != null)
                 </div>
                 <div class="d-flex gap-3 justify-content-center small text-muted mt-2">
                     <span><span class="punto" style="background:var(--fz-verde)"></span> Ingresos</span>
-                    <span><span class="punto" style="background:#d9534f"></span> Gastos</span>
+                    <span><span class="punto" style="background:var(--fz-gasto)"></span> Gastos</span>
                 </div>
                 @if (Comparacion() is { } texto)
                 {

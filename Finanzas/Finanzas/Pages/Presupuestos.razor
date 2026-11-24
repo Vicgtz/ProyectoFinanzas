@@ -2,7 +2,7 @@
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
 @using Finanzas.Models.Presupuesto
 
-<PageTitle>Presupuestos - Finanzas</PageTitle>
+<PageTitle>Presupuestos - Finexa</PageTitle>
 
 <div class="page-header">
     <div>
@@ -61,7 +61,7 @@ else if (resumen != null)
 
     @if (resumen.Items.Count == 0)
     {
-        <div class="text-center text-muted py-5">
+        <div class="estado-vacio">
             Todavía no tienes presupuestos. Crea uno para una categoría (por ejemplo, Comida o Entretenimiento) y te avisaremos cuando te acerques al límite.
         </div>
     }

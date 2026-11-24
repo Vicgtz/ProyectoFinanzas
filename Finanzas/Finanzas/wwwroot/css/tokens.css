@@ -1,0 +1,104 @@
+/* Finexa: tokens de diseño. Tema claro por defecto; el oscuro se activa con data-bs-theme="dark" en <html>.
+   Los nombres --fz-* se conservan para no romper las hojas de cada página. */
+:root {
+    /* Marca */
+    --fx-verde-profundo: #104E46;
+    --fx-verde-esmeralda: #168875;
+    --fx-verde-crecimiento: #36B985;
+    --fx-fondo-claro: #EAF5F1;
+    --fx-grafito: #202A32;
+
+    /* Roles (tema claro) */
+    --fz-verde-oscuro: var(--fx-verde-profundo);
+    --fz-verde: var(--fx-verde-esmeralda);
+    --fz-verde-claro: var(--fx-verde-crecimiento);
+    --fz-verde-suave: #DCEFE8;
+    --fz-acento: #F4B63F;
+    --fz-fondo: var(--fx-fondo-claro);
+    --fz-superficie: #FFFFFF;
+    --fz-superficie-2: #F5FAF8;
+    --fz-texto: var(--fx-grafito);
+    --fz-texto-suave: #5B6B66;
+    --fz-titulo: var(--fx-verde-profundo);
+    --fz-borde: #D3E5DE;
+    --fz-enlace: var(--fx-verde-esmeralda);
+    --fz-verde-hover: var(--fx-verde-profundo);
+    --fz-foco: rgba(22, 136, 117, 0.45);
+
+    /* Semánticos */
+    --fz-ingreso: #168875;
+    --fz-gasto: #D64545;
+    --fz-aviso: #C98A0B;
+    --fz-info: #2B86C5;
+    --fz-neutro: #9AA8A3;
+
+    /* Categorías en gráficas */
+    --fz-cat-1: #168875; --fz-cat-2: #F4B63F; --fz-cat-3: #D64545; --fz-cat-4: #2B86C5;
+    --fz-cat-5: #8E6BBF; --fz-cat-6: #36B985; --fz-cat-7: #E07B39; --fz-cat-8: #8A9A95;
+
+    /* Forma */
+    --fz-radio: 10px;
+    --fz-radio-tarjeta: 14px;
+    --fz-radio-modal: 16px;
+    --fz-sombra: 0 2px 8px rgba(16, 78, 70, 0.08);
+    --fz-sombra-alta: 0 8px 24px rgba(16, 78, 70, 0.14);
+
+    /* Navegación lateral */
+    --fz-nav-fondo: linear-gradient(180deg, var(--fx-verde-profundo) 0%, #0C3B35 100%);
+    --fz-nav-texto: #D4ECE5;
+    --fz-nav-activo: rgba(255, 255, 255, 0.16);
+
+    /* Puente con Bootstrap */
+    --bs-primary: #168875;
+    --bs-primary-rgb: 22, 136, 117;
+    --bs-link-color: var(--fz-enlace);
+    --bs-link-hover-color: var(--fx-verde-profundo);
+    --bs-body-bg: var(--fz-fondo);
+    --bs-body-color: var(--fz-texto);
+    --bs-border-color: var(--fz-borde);
+    --bs-secondary-color: var(--fz-texto-suave);
+}
+
+[data-bs-theme="dark"] {
+    --fz-verde-oscuro: #9BE3C6;
+    --fz-verde: #1BA58C;
+    --fz-verde-claro: var(--fx-verde-crecimiento);
+    --fz-verde-suave: #1D3A36;
+    --fz-acento: #F4B63F;
+    --fz-fondo: #141B21;
+    --fz-superficie: #1E2830;
+    --fz-superficie-2: #25313A;
+    --fz-texto: #E6F0EC;
+    --fz-texto-suave: #9FB1AA;
+    --fz-titulo: #9BE3C6;
+    --fz-borde: #33434B;
+    --fz-enlace: #4FD1A1;
+    --fz-verde-hover: #168875;
+    --fz-foco: rgba(54, 185, 133, 0.55);
+
+    --fz-ingreso: #4FD1A1;
+    --fz-gasto: #F07272;
+    --fz-aviso: #F4B63F;
+    --fz-info: #62B0E8;
+    --fz-neutro: #7E908A;
+
+    --fz-cat-1: #2FC4A6; --fz-cat-2: #F4B63F; --fz-cat-3: #F07272; --fz-cat-4: #62B0E8;
+    --fz-cat-5: #B293E0; --fz-cat-6: #5FD9A3; --fz-cat-7: #F09A5E; --fz-cat-8: #9FB1AA;
+
+    --fz-sombra: 0 2px 10px rgba(0, 0, 0, 0.35);
+    --fz-sombra-alta: 0 8px 24px rgba(0, 0, 0, 0.5);
+
+    --fz-nav-fondo: linear-gradient(180deg, #0F2E2A 0%, #0A1F1C 100%);
+
+    --bs-primary: #1BA58C;
+    --bs-primary-rgb: 27, 165, 140;
+    --bs-body-bg: var(--fz-fondo);
+    --bs-body-bg-rgb: 20, 27, 33;
+    --bs-body-color: var(--fz-texto);
+    --bs-body-color-rgb: 230, 240, 236;
+    --bs-secondary-color: var(--fz-texto-suave);
+    --bs-tertiary-bg: var(--fz-superficie-2);
+    --bs-border-color: var(--fz-borde);
+    --bs-emphasis-color: #FFFFFF;
+    color-scheme: dark;
+}

@@ -10,7 +10,7 @@ public partial class Home
 {
     private static readonly CultureInfo Cultura = new("es-MX");
     private static readonly string[] Colores =
-        ["#1b7f6b", "#f4b63f", "#d9534f", "#3d8bd9", "#8e6bbf", "#2fa37d", "#e07b39", "#8a9a95"];
+        ["var(--fz-cat-1)", "var(--fz-cat-2)", "var(--fz-cat-3)", "var(--fz-cat-4)", "var(--fz-cat-5)", "var(--fz-cat-6)", "var(--fz-cat-7)", "var(--fz-cat-8)"];
 
     [Inject] private AuthenticationStateProvider AuthState { get; set; } = default!;
     [Inject] private DashboardService DashboardApi { get; set; } = default!;
