@@ -32,7 +32,7 @@
     }
 
     .nav-inferior ::deep .ni-item.active, .ni-item.abierto {
-        color: var(--fz-verde);
+        color: var(--fz-enlace);
     }
 
     .ni-agregar {
@@ -107,7 +107,7 @@
     }
 
     .hoja-grid ::deep .hoja-item.active {
-        border-color: var(--fz-verde);
-        color: var(--fz-verde);
+        border-color: var(--fz-enlace);
+        color: var(--fz-enlace);
     }
 }

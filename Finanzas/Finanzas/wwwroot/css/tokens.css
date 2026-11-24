@@ -10,7 +10,7 @@
 
     /* Roles (tema claro) */
     --fz-verde-oscuro: var(--fx-verde-profundo);
-    --fz-verde: var(--fx-verde-esmeralda);
+    --fz-verde: #12786A; /* acción: 5,3:1 con texto blanco (la marca #168875 queda en --fx-verde-esmeralda) */
     --fz-verde-claro: var(--fx-verde-crecimiento);
     --fz-verde-suave: #DCEFE8;
     --fz-acento: #F4B63F;
@@ -21,15 +21,15 @@
     --fz-texto-suave: #5B6B66;
     --fz-titulo: var(--fx-verde-profundo);
     --fz-borde: #D3E5DE;
-    --fz-enlace: var(--fx-verde-esmeralda);
+    --fz-enlace: #0F7060;
     --fz-verde-hover: var(--fx-verde-profundo);
-    --fz-foco: rgba(22, 136, 117, 0.45);
+    --fz-foco: rgba(18, 120, 106, 0.5);
 
     /* Semánticos */
-    --fz-ingreso: #168875;
-    --fz-gasto: #D64545;
+    --fz-ingreso: #0F7060;
+    --fz-gasto: #C23B3B;
     --fz-aviso: #C98A0B;
-    --fz-info: #2B86C5;
+    --fz-info: #1F6FA8;
     --fz-neutro: #9AA8A3;
 
     /* Categorías en gráficas */
@@ -49,8 +49,8 @@
     --fz-nav-activo: rgba(255, 255, 255, 0.16);
 
     /* Puente con Bootstrap */
-    --bs-primary: #168875;
-    --bs-primary-rgb: 22, 136, 117;
+    --bs-primary: #12786A;
+    --bs-primary-rgb: 18, 120, 106;
     --bs-link-color: var(--fz-enlace);
     --bs-link-hover-color: var(--fx-verde-profundo);
     --bs-body-bg: var(--fz-fondo);
@@ -61,7 +61,7 @@
 
 [data-bs-theme="dark"] {
     --fz-verde-oscuro: #9BE3C6;
-    --fz-verde: #1BA58C;
+    --fz-verde: #12786A;
     --fz-verde-claro: var(--fx-verde-crecimiento);
     --fz-verde-suave: #1D3A36;
     --fz-acento: #F4B63F;
@@ -73,7 +73,7 @@
     --fz-titulo: #9BE3C6;
     --fz-borde: #33434B;
     --fz-enlace: #4FD1A1;
-    --fz-verde-hover: #168875;
+    --fz-verde-hover: #0E6155;
     --fz-foco: rgba(54, 185, 133, 0.55);
 
     --fz-ingreso: #4FD1A1;
@@ -90,8 +90,8 @@
 
     --fz-nav-fondo: linear-gradient(180deg, #0F2E2A 0%, #0A1F1C 100%);
 
-    --bs-primary: #1BA58C;
-    --bs-primary-rgb: 27, 165, 140;
+    --bs-primary: #12786A;
+    --bs-primary-rgb: 18, 120, 106;
     --bs-body-bg: var(--fz-fondo);
     --bs-body-bg-rgb: 20, 27, 33;
     --bs-body-color: var(--fz-texto);

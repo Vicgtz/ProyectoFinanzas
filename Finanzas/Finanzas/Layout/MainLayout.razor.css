@@ -86,7 +86,7 @@ article.content {
         padding: 0 1rem;
     }
 
-    .marca-movil { display: flex; align-items: center; }
+    .marca-movil { display: flex; align-items: center; min-height: 2.75rem; }
     .marca-movil img { height: 1.9rem; width: auto; }
     .nombre, .btn-salir { display: none; }
 

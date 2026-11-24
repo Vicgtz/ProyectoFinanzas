@@ -1,5 +1,7 @@
 @inherits LayoutComponentBase
 
+<a href="@(Navigation.Uri)#contenido" class="saltar-contenido" @onclick:preventDefault @onclick="IrAlContenido">Saltar al contenido</a>
+
 <div class="page">
     <aside class="sidebar">
         <NavMenu />
@@ -20,7 +22,7 @@
             </AuthorizeView>
         </header>
 
-        <article class="content" @key="refresco">
+        <article class="content" id="contenido" tabindex="-1" @key="refresco">
             @Body
         </article>
     </main>

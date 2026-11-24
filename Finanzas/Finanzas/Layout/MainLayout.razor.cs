@@ -1,5 +1,6 @@
 using Finanzas.Services;
 using Microsoft.AspNetCore.Components;
+using Microsoft.JSInterop;
 
 namespace Finanzas.Layout;
 
@@ -7,9 +8,12 @@ public partial class MainLayout
 {
     [Inject] private UsuarioService Usuario { get; set; } = default!;
     [Inject] private NavigationManager Navigation { get; set; } = default!;
+    [Inject] private IJSRuntime JS { get; set; } = default!;
 
     private bool agregarAbierto;
     private int refresco;
+
+    private async Task IrAlContenido() => await JS.InvokeVoidAsync("finexaFoco", "contenido");
 
     private async Task CerrarSesion()
     {
