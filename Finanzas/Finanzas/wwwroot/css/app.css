@@ -38,8 +38,8 @@ a, .btn-link {
 
 .btn-primary:hover, .btn-primary:focus, .btn-primary:active {
     color: #fff;
-    background-color: var(--fz-titulo);
-    border-color: var(--fz-titulo);
+    background-color: var(--fz-verde-hover);
+    border-color: var(--fz-verde-hover);
 }
 
 .btn-primary:disabled {
