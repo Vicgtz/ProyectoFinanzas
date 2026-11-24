@@ -55,7 +55,7 @@ La especificación del rediseño está en `Finexa_Redisenio_Caracteristicas.md` 
 - **Breakpoints**: móvil < 576 px, tableta 576–991 px, escritorio ≥ 992 px. Escritorio: menú lateral de 250 px; tableta: menú compacto de iconos; móvil: sin menú lateral y con navegación inferior (`Layout/NavInferior`: Inicio, Movimientos, **Agregar**, Cuentas, Más). Debajo de 992 px las tablas `.table-cards` se convierten en tarjetas (requieren `data-label` en cada `td`; la columna de botones lleva clase `acciones`).
 - **Agregar movimiento**: `MainLayout` aloja un `MovimientoForm` global (botón del encabezado en escritorio y botón central en móvil); al guardar incrementa una clave sobre `@Body` para que la página actual recargue sus datos.
 - **Iconos**: `Components/IconoNav` (navegación, `currentColor`) e `IconoAccion` (acciones de tabla); sin librerías de iconos.
-- **Accesibilidad**: foco visible global, enlace "Saltar al contenido", áreas táctiles de 44 px en móvil/tableta, `prefers-reduced-motion`. Los modales hechos a mano aún no atrapan el foco ni cierran con Escape.
+- **Accesibilidad**: foco visible global, enlace "Saltar al contenido", áreas táctiles de 44 px en móvil/tableta, `prefers-reduced-motion`. Los modales hechos a mano (`.modal.show`) atrapan el foco, cierran con Escape y devuelven el foco mediante un script en `index.html`, sin tocar cada modal.
 - **Pantalla de carga**: marcado `.cargando` dentro de `#app` en `index.html`; usa las variables de progreso de Blazor.
 
 ## Modelo financiero

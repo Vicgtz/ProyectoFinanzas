@@ -1,8 +1,55 @@
+/* Fondo de inicio de sesión con la identidad Finexa: degradados de la paleta y el isotipo como marca de agua */
 .login-fondo {
+    position: relative;
     min-height: 100vh;
+    overflow: hidden;
     background-color: var(--fz-fondo);
-    background-image: url("imagenFondo.png");
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+    background-image:
+        radial-gradient(circle at 12% 8%, rgba(54, 185, 133, 0.30), transparent 42%),
+        radial-gradient(circle at 92% 92%, rgba(22, 136, 117, 0.32), transparent 48%),
+        linear-gradient(160deg, #EAF5F1 0%, #CDEADF 100%);
+}
+
+.login-fondo::before {
+    content: "";
+    position: absolute;
+    left: -20%;
+    right: -20%;
+    bottom: -38%;
+    height: 70%;
+    border-radius: 50%;
+    background: linear-gradient(180deg, rgba(16, 78, 70, 0.14), rgba(22, 136, 117, 0.04));
+    pointer-events: none;
+}
+
+.login-fondo::after {
+    content: "";
+    position: absolute;
+    right: -4rem;
+    bottom: -3rem;
+    width: min(46vw, 28rem);
+    aspect-ratio: 430 / 452;
+    background: url("finexa-isotipo.png") center / contain no-repeat;
+    opacity: 0.10;
+    pointer-events: none;
+}
+
+.login-fondo > * {
+    position: relative;
+    z-index: 1;
+}
+
+[data-bs-theme="dark"] .login-fondo {
+    background-image:
+        radial-gradient(circle at 12% 8%, rgba(54, 185, 133, 0.16), transparent 42%),
+        radial-gradient(circle at 92% 92%, rgba(22, 136, 117, 0.22), transparent 48%),
+        linear-gradient(160deg, #0F2A27 0%, #141B21 60%);
+}
+
+[data-bs-theme="dark"] .login-fondo::before {
+    background: linear-gradient(180deg, rgba(54, 185, 133, 0.10), rgba(22, 136, 117, 0.02));
+}
+
+[data-bs-theme="dark"] .login-fondo::after {
+    opacity: 0.07;
 }

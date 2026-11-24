@@ -545,9 +545,6 @@ code {
 [data-bs-theme="dark"] .logo-claro { display: none !important; }
 [data-bs-theme="dark"] .logo-oscuro { display: block !important; }
 
-[data-bs-theme="dark"] .login-fondo {
-    background-image: linear-gradient(rgba(20, 27, 33, 0.82), rgba(20, 27, 33, 0.82)), url("imagenFondo.png") !important;
-}
 
 /* Colores semánticos de Bootstrap con la paleta Finexa (barras de avance, etiquetas) */
 .bg-success { background-color: var(--fz-ingreso) !important; }

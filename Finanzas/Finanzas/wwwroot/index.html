@@ -32,12 +32,71 @@
             };
         })();
     </script>
+    <script>
+        // Accesibilidad de los modales hechos a mano (.modal.show): llevan el foco adentro, lo mantienen
+        // dentro con Tab, cierran con Escape (pulsando su propio botón de cerrar) y devuelven el foco al salir.
+        (function () {
+            var previo = null, activo = null;
+            var SELECTOR = 'a[href],button:not([disabled]),input:not([disabled]):not([type=hidden]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])';
+
+            function modalAbierto() {
+                var m = document.querySelectorAll('.modal.show');
+                return m.length ? m[m.length - 1] : null;
+            }
+            function enfocables(c) {
+                return Array.prototype.filter.call(c.querySelectorAll(SELECTOR), function (e) { return e.offsetParent !== null; });
+            }
+            function revisar() {
+                var m = modalAbierto();
+                if (m && m !== activo) {
+                    if (!activo) previo = document.activeElement;
+                    activo = m;
+                    var c = m.querySelector('.modal-content') || m;
+                    if (!c.hasAttribute('tabindex')) c.setAttribute('tabindex', '-1');
+                    setTimeout(function () {
+                        var lista = enfocables(c);
+                        var primero = lista.find(function (e) { return !e.classList.contains('btn-close'); });
+                        (primero || c).focus();
+                    }, 60);
+                } else if (!m && activo) {
+                    activo = null;
+                    if (previo && document.contains(previo)) previo.focus();
+                    previo = null;
+                }
+            }
+            new MutationObserver(revisar).observe(document.documentElement, { childList: true, subtree: true });
+
+            document.addEventListener('keydown', function (e) {
+                var m = modalAbierto();
+                if (!m) return;
+                if (e.key === 'Escape') {
+                    var cerrar = m.querySelector('.btn-close:not([disabled])') ||
+                        Array.prototype.find.call(m.querySelectorAll('.modal-footer button'), function (b) {
+                            return !b.disabled && /cancelar|cerrar/i.test(b.textContent);
+                        });
+                    if (cerrar) { e.preventDefault(); cerrar.click(); }
+                    return;
+                }
+                if (e.key === 'Tab') {
+                    var lista = enfocables(m.querySelector('.modal-content') || m);
+                    if (!lista.length) return;
+                    var primero = lista[0], ultimo = lista[lista.length - 1];
+                    var dentro = m.contains(document.activeElement);
+                    if (e.shiftKey && (!dentro || document.activeElement === primero || document.activeElement === m.querySelector('.modal-content'))) {
+                        e.preventDefault(); ultimo.focus();
+                    } else if (!e.shiftKey && (!dentro || document.activeElement === ultimo)) {
+                        e.preventDefault(); primero.focus();
+                    }
+                }
+            });
+        })();
+    </script>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="css/tokens.css?v=5" />
-    <link rel="stylesheet" href="css/app.css?v=10" />
+    <link rel="stylesheet" href="css/app.css?v=11" />
     <link rel="icon" type="image/png" href="favicon.png" />
     <link href="Finanzas.styles.css" rel="stylesheet" />
 </head>
