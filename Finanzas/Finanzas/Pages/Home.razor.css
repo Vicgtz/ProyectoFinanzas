@@ -169,3 +169,159 @@
     font-size: 0.8rem;
     color: var(--fz-texto-suave);
 }
+
+/* Fecha de hoy junto al encabezado */
+.inicio-fecha {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: auto;
+    padding: 0.5rem 0.9rem;
+    border: 1px solid var(--fz-borde);
+    border-radius: 12px;
+    background: var(--fz-superficie);
+    box-shadow: var(--fz-sombra);
+    color: var(--fz-texto);
+    font-size: 0.9rem;
+    white-space: nowrap;
+}
+
+@media (max-width: 767.98px) {
+    .inicio-fecha {
+        display: none;
+    }
+}
+
+/* Rejillas de tarjetas */
+.inicio-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+    margin-bottom: 1rem;
+}
+
+@media (min-width: 1200px) {
+    .inicio-grid {
+        grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+    }
+}
+
+.inicio-columna {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    min-width: 0;
+}
+
+/* Cifras del mes dentro del resumen */
+.inicio-mes-cifras {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 0.75rem;
+    margin-bottom: 1.25rem;
+}
+
+.inicio-mes-cifras > div {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.inicio-mes-cifras strong {
+    font-size: 1.15rem;
+    overflow-wrap: anywhere;
+}
+
+@media (max-width: 575.98px) {
+    .inicio-mes-cifras strong {
+        font-size: 0.95rem;
+    }
+}
+
+/* Consejo de Finexa */
+.consejo {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.75rem;
+    padding: 1.4rem;
+    border-radius: var(--fz-radio-tarjeta);
+    background: linear-gradient(135deg, var(--fx-verde-profundo), var(--fx-verde-esmeralda));
+    color: #fff;
+    box-shadow: var(--fz-sombra);
+}
+
+.consejo-titulo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin: 0;
+    font-size: 1.15rem;
+    font-weight: 600;
+    color: #fff;
+}
+
+.consejo-texto {
+    margin: 0;
+    font-size: 1.05rem;
+    line-height: 1.5;
+}
+
+.consejo-enlace {
+    margin-top: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.55rem 1.1rem;
+    border: 2px solid #fff;
+    border-radius: 999px;
+    color: #fff;
+    font-weight: 600;
+    text-decoration: none;
+}
+
+.consejo-enlace:hover {
+    background: #fff;
+    color: var(--fx-verde-profundo);
+}
+
+/* Accesos rápidos */
+.accesos {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(8rem, 1fr));
+    gap: 0.75rem;
+}
+
+.acceso {
+    --tono: var(--fz-verde);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 6.5rem;
+    padding: 0.8rem;
+    border: 1px solid color-mix(in srgb, var(--tono) 30%, var(--fz-superficie));
+    border-radius: 14px;
+    background: color-mix(in srgb, var(--tono) 12%, var(--fz-superficie));
+    color: var(--fz-texto);
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-align: center;
+    text-decoration: none;
+    cursor: pointer;
+}
+
+.acceso ::deep .icono-nav {
+    color: var(--tono);
+}
+
+.acceso:hover {
+    background: color-mix(in srgb, var(--tono) 22%, var(--fz-superficie));
+    color: var(--fz-texto);
+}
+
+.acceso-2 { --tono: var(--fz-info); }
+.acceso-3 { --tono: var(--fz-cat-5); }
+.acceso-4 { --tono: var(--fz-cat-7); }

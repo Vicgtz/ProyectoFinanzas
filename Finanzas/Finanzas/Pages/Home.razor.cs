@@ -1,5 +1,6 @@
 using System.Globalization;
 using Finanzas.Models.Dashboard;
+using Finanzas.Models.Operacion;
 using Finanzas.Services;
 using Microsoft.AspNetCore.Components;
 using Microsoft.AspNetCore.Components.Authorization;
@@ -16,8 +17,11 @@ public partial class Home
     [Inject] private DashboardService DashboardApi { get; set; } = default!;
     [Inject] private CuentaService CuentaApi { get; set; } = default!;
 
+    [Inject] private OperacionService OperacionApi { get; set; } = default!;
+
     private string Nombre { get; set; } = "";
     private bool movimientoAbierto;
+    private List<OperacionModel> recientes = [];
 
     private DashboardModel? datos;
     private bool cargando = true;
@@ -38,13 +42,52 @@ public partial class Home
     {
         cargando = true;
         error = null;
-        var respuesta = await DashboardApi.Get(anio, mes);
+        var tareaDatos = DashboardApi.Get(anio, mes);
+        var tareaRecientes = OperacionApi.GetList(new OperacionFiltro { Take = 5 });
+        await Task.WhenAll(tareaDatos, tareaRecientes);
+
+        var respuesta = tareaDatos.Result;
         if (respuesta.Success)
             datos = respuesta.Data;
         else
             error = respuesta.Message;
+
+        // Los movimientos recientes son un complemento: si fallan, el resto sigue funcionando.
+        recientes = tareaRecientes.Result.Success ? tareaRecientes.Result.Data ?? [] : [];
         cargando = false;
     }
+
+    private static string FechaHoy => "Hoy, " + DateTime.Today.ToString("d 'de' MMMM 'de' yyyy", Cultura);
+
+    private static string IconoTipo(string t) => t switch
+    {
+        TipoOperacion.Ingreso => "flecha-abajo",
+        TipoOperacion.Gasto => "flecha-arriba",
+        TipoOperacion.Transferencia => "movimientos",
+        TipoOperacion.PagoTarjeta => "cuentas",
+        _ => "personas"
+    };
+
+    private static string ClaseMonto(string t) => t switch
+    {
+        TipoOperacion.Ingreso => "text-success",
+        TipoOperacion.Gasto => "text-danger",
+        _ => ""
+    };
+
+    private static string MontoReciente(OperacionModel o) => o.TipoOperacion switch
+    {
+        TipoOperacion.Ingreso or TipoOperacion.DeudaAdquirida or TipoOperacion.CobroPrestamo => $"+{Moneda(o.Monto)}",
+        TipoOperacion.Gasto or TipoOperacion.PrestamoOtorgado or TipoOperacion.PagoDeudaPersona => $"-{Moneda(o.Monto)}",
+        _ => Moneda(o.Monto)
+    };
+
+    private static string TituloReciente(OperacionModel o) =>
+        string.IsNullOrWhiteSpace(o.Descripcion) ? TipoOperacionTexto.Nombre(o.TipoOperacion) : o.Descripcion;
+
+    // Texto del consejo: la comparación contra el mes anterior o, si no hay, uno general.
+    private string Consejo() =>
+        Comparacion() ?? "Mantén un equilibrio entre tus ingresos y gastos. Un control adecuado te acerca a tus metas.";
 
     private async Task MarcarPagado(int idCuenta)
     {

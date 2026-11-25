@@ -11,30 +11,11 @@
     }
 }
 
-.cta-titulo {
-    display: flex;
-    flex-wrap: wrap;
-    align-items: center;
-    justify-content: space-between;
-    gap: 0.5rem;
-    margin-bottom: 1rem;
-}
-
-.cta-titulo .seccion-titulo,
 .cta-estado .seccion-titulo {
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    margin-bottom: 0;
-}
-
-.cta-estado .seccion-titulo {
     margin-bottom: 1rem;
-}
-
-.cta-enlace {
-    font-size: 0.9rem;
-    font-weight: 500;
 }
 
 /* Tarjetas de cuenta */
@@ -241,61 +222,6 @@
     margin-top: 0.75rem;
     font-size: 0.82rem;
     color: var(--fz-texto-suave);
-}
-
-/* Movimientos recientes */
-.cta-lista {
-    list-style: none;
-    margin: 0;
-    padding: 0;
-}
-
-.cta-lista li {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    padding: 0.65rem 0;
-    border-bottom: 1px solid var(--fz-borde);
-}
-
-.cta-lista li:last-child {
-    border-bottom: 0;
-}
-
-.cta-lista-icono {
-    flex: 0 0 auto;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 2.3rem;
-    height: 2.3rem;
-    border-radius: 50%;
-    background: var(--fz-superficie-2);
-    border: 1px solid var(--fz-borde);
-}
-
-.cta-lista-texto {
-    display: flex;
-    flex-direction: column;
-    flex: 1 1 auto;
-    min-width: 0;
-}
-
-.cta-lista-texto strong {
-    font-weight: 600;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-}
-
-.cta-lista-texto span {
-    font-size: 0.8rem;
-    color: var(--fz-texto-suave);
-}
-
-.cta-lista-monto {
-    flex: 0 0 auto;
-    font-weight: 600;
 }
 
 /* Leyendas (puntos de color) */
