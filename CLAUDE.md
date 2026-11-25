@@ -56,6 +56,7 @@ La especificación del rediseño está en `Finexa_Redisenio_Caracteristicas.md` 
 - **Agregar movimiento**: `MainLayout` aloja un `MovimientoForm` global (botón del encabezado en escritorio y botón central en móvil); al guardar incrementa una clave sobre `@Body` para que la página actual recargue sus datos.
 - **Iconos**: `Components/IconoNav` (navegación, `currentColor`) e `IconoAccion` (acciones de tabla); sin librerías de iconos.
 - **Accesibilidad**: foco visible global, enlace "Saltar al contenido", áreas táctiles de 44 px en móvil/tableta, `prefers-reduced-motion`. Los modales hechos a mano (`.modal.show`) atrapan el foco, cierran con Escape y devuelven el foco mediante un script en `index.html`, sin tocar cada modal.
+- **Inicio de sesión y registro**: `LoginLayout` es un diseño dividido (panel de marca verde con logo, lema y barras decorativas ≥ 992 px; solo la tarjeta en móvil). Los campos usan `.campo-icono` y el botón de ver contraseña `.campo-ver`. No hay "mantener sesión", "olvidé mi contraseña" ni acceso con Google/Microsoft porque la autenticación no los soporta.
 - **Pantalla de carga**: marcado `.cargando` dentro de `#app` en `index.html`; usa las variables de progreso de Blazor.
 
 ## Modelo financiero

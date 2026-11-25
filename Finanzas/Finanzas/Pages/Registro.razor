@@ -3,12 +3,15 @@
 
 <PageTitle>Crear cuenta - Finexa</PageTitle>
 
-<div class="card shadow border-0 login-card">
-    <div class="card-body p-4">
-        <img src="finexa-logo.png" alt="Finexa" class="d-block mx-auto mb-2 login-logo logo-claro" />
-        <img src="finexa-logo-oscuro.png" alt="Finexa" class="d-block mx-auto mb-2 login-logo logo-oscuro" />
-        <h1 class="h3 text-center mb-1">Crear cuenta</h1>
-        <p class="text-center text-muted mb-4">Necesitas la clave de registro</p>
+<div class="card border-0 login-card">
+    <div class="card-body login-cuerpo">
+        <div class="login-logo-movil">
+            <img src="finexa-logo.png" alt="Finexa" class="login-logo logo-claro" />
+            <img src="finexa-logo-oscuro.png" alt="Finexa" class="login-logo logo-oscuro" />
+        </div>
+        <img src="finexa-isotipo.png" alt="" class="login-iso" />
+        <h1 class="login-titulo">Crear cuenta</h1>
+        <p class="login-subtitulo">Necesitas la clave de registro</p>
 
         <EditForm Model="modelo" OnValidSubmit="CrearCuenta">
             <DataAnnotationsValidator />

@@ -527,18 +527,6 @@ code {
 .text-success { color: var(--fz-ingreso) !important; }
 .text-danger { color: var(--fz-gasto) !important; }
 
-/* Login y registro */
-.login-card {
-    background-color: color-mix(in srgb, var(--fz-superficie) 94%, transparent);
-    backdrop-filter: blur(6px);
-}
-
-.login-logo {
-    width: 100%;
-    max-width: 260px;
-    height: auto;
-    margin-bottom: 1rem !important;
-}
 
 /* Variantes de logotipo según tema */
 .logo-oscuro { display: none !important; }
@@ -707,4 +695,118 @@ code { color: var(--fz-gasto); }
 @keyframes cargando-pulso {
     0%, 100% { transform: scale(1); opacity: 0.85; }
     50% { transform: scale(1.06); opacity: 1; }
+}
+
+/* Login y registro: tarjeta del formulario */
+.login-card {
+    border-radius: 22px;
+    background-color: color-mix(in srgb, var(--fz-superficie) 96%, transparent);
+    backdrop-filter: blur(6px);
+    box-shadow: var(--fz-sombra-alta);
+}
+
+.login-cuerpo {
+    padding: 2rem 1.5rem;
+}
+
+@media (min-width: 576px) {
+    .login-cuerpo {
+        padding: 2.5rem 2.25rem;
+    }
+}
+
+.login-logo-movil {
+    margin-bottom: 0.5rem;
+}
+
+.login-logo {
+    display: block;
+    width: 100%;
+    max-width: 240px;
+    height: auto;
+    margin: 0 auto 0.75rem;
+}
+
+.login-iso {
+    display: none;
+    width: 84px;
+    height: auto;
+    margin: 0 auto 0.75rem;
+}
+
+@media (min-width: 992px) {
+    .login-logo-movil { display: none; }
+    .login-iso { display: block; }
+}
+
+.login-titulo {
+    margin: 0 0 0.25rem;
+    font-size: 1.6rem;
+    font-weight: 700;
+    text-align: center;
+    color: var(--fz-texto);
+}
+
+.login-titulo .texto-marca {
+    color: var(--fz-enlace);
+}
+
+.login-subtitulo {
+    margin: 0 0 1.75rem;
+    text-align: center;
+    color: var(--fz-texto-suave);
+}
+
+/* Campos con icono a la izquierda y botón de ver contraseña a la derecha */
+.campo-icono {
+    position: relative;
+}
+
+.campo-icono > :first-child.icono-nav {
+    position: absolute;
+    left: 0.95rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--fz-texto-suave);
+    pointer-events: none;
+}
+
+.campo-icono .form-control {
+    padding-left: 2.7rem;
+    min-height: 3rem;
+    border-radius: 12px;
+}
+
+.campo-icono .campo-con-boton {
+    padding-right: 3rem;
+}
+
+.campo-ver {
+    position: absolute;
+    right: 0.35rem;
+    top: 50%;
+    transform: translateY(-50%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.75rem;
+    height: 2.75rem;
+    border: 0;
+    border-radius: 50%;
+    background: transparent;
+    color: var(--fz-texto-suave);
+}
+
+.campo-ver:hover {
+    color: var(--fz-enlace);
+}
+
+.login-boton {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.55rem;
+    min-height: 3rem;
+    border-radius: 999px;
+    font-weight: 600;
 }

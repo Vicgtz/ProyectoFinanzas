@@ -14,6 +14,7 @@ public partial class Login
 
     private readonly LoginModel modelo = new();
     private bool cargando;
+    private bool verContra;
     private string? error;
 
     protected override async Task OnInitializedAsync()

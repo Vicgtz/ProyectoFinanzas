@@ -1,7 +1,26 @@
 @inherits LayoutComponentBase
 
-<div class="login-fondo d-flex align-items-center justify-content-center px-3">
-    <div class="w-100" style="max-width: 400px;">
-        @Body
+<div class="login-fondo">
+    <section class="login-marca">
+        <div class="marca-contenido">
+            <img src="finexa-logo-oscuro.png" alt="Finexa" class="marca-logo" />
+            <p class="marca-lema">Tu dinero, en control</p>
+            <span class="marca-linea" aria-hidden="true"></span>
+            <p class="marca-pilares">Organiza <b>•</b> Planea <b>•</b> Crece</p>
+            <p class="marca-texto">Gestiona tus finanzas de forma simple, segura y desde cualquier dispositivo.</p>
+        </div>
+        <div class="marca-barras" aria-hidden="true">
+            <span style="--h:26%"></span>
+            <span style="--h:38%"></span>
+            <span style="--h:52%"></span>
+            <span style="--h:70%"></span>
+            <span style="--h:92%"></span>
+        </div>
+    </section>
+
+    <div class="login-formulario">
+        <div class="login-ancho">
+            @Body
+        </div>
     </div>
 </div>

@@ -1,6 +1,8 @@
-/* Fondo de inicio de sesión con la identidad Finexa: degradados de la paleta y el isotipo como marca de agua */
+/* Inicio de sesión: panel de marca a la izquierda (escritorio) y formulario a la derecha */
 .login-fondo {
     position: relative;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
     min-height: 100vh;
     overflow: hidden;
     background-color: var(--fz-fondo);
@@ -52,4 +54,111 @@
 
 [data-bs-theme="dark"] .login-fondo::after {
     opacity: 0.07;
+}
+
+.login-formulario {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1.5rem 1rem;
+}
+
+.login-ancho {
+    width: 100%;
+    max-width: 440px;
+}
+
+/* Panel de marca: solo en pantallas anchas */
+.login-marca {
+    display: none;
+}
+
+@media (min-width: 992px) {
+    .login-fondo {
+        grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr);
+    }
+
+    .login-fondo::after {
+        right: -6rem;
+    }
+
+    .login-marca {
+        position: relative;
+        display: flex;
+        align-items: center;
+        padding: 4rem;
+        overflow: hidden;
+        color: #fff;
+        background-image:
+            radial-gradient(circle at 18% 14%, rgba(54, 185, 133, 0.38), transparent 46%),
+            radial-gradient(circle at 88% 82%, rgba(54, 185, 133, 0.22), transparent 52%),
+            linear-gradient(155deg, #12685C 0%, #104E46 48%, #0A332E 100%);
+    }
+
+    .marca-contenido {
+        position: relative;
+        z-index: 2;
+        max-width: 30rem;
+    }
+
+    .marca-logo {
+        width: min(26rem, 100%);
+        height: auto;
+    }
+
+    .marca-lema {
+        margin: 0.75rem 0 0;
+        font-size: 1.5rem;
+        color: rgba(255, 255, 255, 0.88);
+    }
+
+    .marca-linea {
+        display: block;
+        width: 8rem;
+        height: 3px;
+        margin: 1.5rem 0;
+        border-radius: 2px;
+        background: linear-gradient(90deg, #36B985, transparent);
+    }
+
+    .marca-pilares {
+        margin: 0 0 0.6rem;
+        font-size: 1.45rem;
+        font-weight: 600;
+    }
+
+    .marca-pilares b {
+        color: #36B985;
+        padding: 0 0.15rem;
+    }
+
+    .marca-texto {
+        margin: 0;
+        max-width: 24rem;
+        font-size: 1rem;
+        line-height: 1.55;
+        color: rgba(255, 255, 255, 0.82);
+    }
+
+    /* Barras ascendentes decorativas */
+    .marca-barras {
+        position: absolute;
+        z-index: 1;
+        left: 4rem;
+        right: 4rem;
+        bottom: 0;
+        height: 42%;
+        display: flex;
+        align-items: flex-end;
+        justify-content: flex-end;
+        gap: 0.9rem;
+        pointer-events: none;
+    }
+
+    .marca-barras span {
+        flex: 0 0 3rem;
+        height: var(--h);
+        border-radius: 10px 10px 0 0;
+        background: linear-gradient(180deg, rgba(54, 185, 133, 0.55), rgba(54, 185, 133, 0.04));
+    }
 }

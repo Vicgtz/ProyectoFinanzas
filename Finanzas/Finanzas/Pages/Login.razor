@@ -3,25 +3,37 @@
 
 <PageTitle>Iniciar sesión - Finexa</PageTitle>
 
-<div class="card shadow border-0 login-card">
-    <div class="card-body p-4">
-        <img src="finexa-logo.png" alt="Finexa" class="d-block mx-auto mb-2 login-logo logo-claro" />
-        <img src="finexa-logo-oscuro.png" alt="Finexa" class="d-block mx-auto mb-2 login-logo logo-oscuro" />
-        <h1 class="h4 text-center mb-1">Tu dinero, en control</h1>
-        <p class="text-center text-muted mb-4">Inicia sesión para continuar</p>
+<div class="card border-0 login-card">
+    <div class="card-body login-cuerpo">
+        <div class="login-logo-movil">
+            <img src="finexa-logo.png" alt="Finexa" class="login-logo logo-claro" />
+            <img src="finexa-logo-oscuro.png" alt="Finexa" class="login-logo logo-oscuro" />
+        </div>
+        <img src="finexa-isotipo.png" alt="" class="login-iso" />
+        <h1 class="login-titulo">Bienvenido a <span class="texto-marca">Finexa</span></h1>
+        <p class="login-subtitulo">Inicia sesión para continuar</p>
 
         <EditForm Model="modelo" OnValidSubmit="IniciarSesion">
             <DataAnnotationsValidator />
 
             <div class="mb-3">
-                <label for="correo" class="form-label">Correo</label>
-                <InputText id="correo" type="email" class="form-control" @bind-Value="modelo.Correo" autocomplete="username" disabled="@cargando" />
+                <label for="correo" class="form-label">Correo electrónico</label>
+                <div class="campo-icono">
+                    <IconoNav Nombre="correo" Tamano="18" />
+                    <InputText id="correo" type="email" class="form-control" @bind-Value="modelo.Correo" autocomplete="username" placeholder="tu.correo@ejemplo.com" disabled="@cargando" />
+                </div>
                 <ValidationMessage For="() => modelo.Correo" />
             </div>
 
             <div class="mb-3">
                 <label for="contra" class="form-label">Contraseña</label>
-                <InputText id="contra" type="password" class="form-control" @bind-Value="modelo.Contra" autocomplete="current-password" disabled="@cargando" />
+                <div class="campo-icono">
+                    <IconoNav Nombre="candado" Tamano="18" />
+                    <InputText id="contra" type="@(verContra ? "text" : "password")" class="form-control campo-con-boton" @bind-Value="modelo.Contra" autocomplete="current-password" placeholder="Ingresa tu contraseña" disabled="@cargando" />
+                    <button type="button" class="campo-ver" aria-label="@(verContra ? "Ocultar contraseña" : "Mostrar contraseña")" aria-pressed="@verContra" @onclick="() => verContra = !verContra">
+                        <IconoNav Nombre="@(verContra ? "ojo-no" : "ojo")" Tamano="18" />
+                    </button>
+                </div>
                 <ValidationMessage For="() => modelo.Contra" />
             </div>
 
@@ -30,14 +42,15 @@
                 <div class="alert alert-danger py-2" role="alert">@error</div>
             }
 
-            <button type="submit" class="btn btn-primary w-100" disabled="@cargando">
+            <button type="submit" class="btn btn-primary w-100 login-boton" disabled="@cargando">
                 @if (cargando)
                 {
-                    <span class="spinner-border spinner-border-sm me-2" aria-hidden="true"></span>
+                    <span class="spinner-border spinner-border-sm" aria-hidden="true"></span>
                     <span>Entrando...</span>
                 }
                 else
                 {
+                    <IconoNav Nombre="entrar" Tamano="18" />
                     <span>Iniciar sesión</span>
                 }
             </button>
