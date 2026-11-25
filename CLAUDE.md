@@ -79,7 +79,7 @@ Tablas principales: `Usuario`, `Cuenta`, `Categoria`, `Persona`, `Operacion`, `M
 ## Funcionalidad (pantallas)
 
 - **Inicio** (dashboard): ingresos, gastos y diferencia del mes, dinero propio vs. crédito disponible, deuda de tarjetas, gastos por categoría (dona), comparación de 6 meses, indicadores de salud financiera.
-- **Movimientos**: alta, edición y baja de operaciones con filtros por fecha, tipo, cuenta y categoría.
+- **Movimientos**: alta, edición y baja de operaciones. Arriba, cuatro tarjetas con las cifras del dashboard del mes elegido (`DashboardService`, no dependen de los demás filtros); filtros de mes, tipo, cuenta y categoría van al servidor, mientras que el buscador y las pestañas (Todos, Ingresos, Gastos, Préstamos, Deudas) filtran en el cliente sobre lo ya cargado. La paginación sigue siendo "Cargar más" (la API no devuelve el total).
 - **Cuentas** y detalle de cuenta: saldos, movimientos de la cuenta y, en tarjetas, límite, uso, consumo del periodo y cortes.
 - **Meses sin intereses**: total por cobrar, compromisos por mes y avance de cada compra.
 - **Análisis**: meses en déficit, variación mensual, gasto esencial vs. no esencial (`Categoria.ClasificacionGasto`: `E`, `N`, `X`), categorías que suben, alertas y simulador de compra grande (contado o MSI).

@@ -1,5 +1,6 @@
 using Finanzas.Models.Categoria;
 using Finanzas.Models.Cuenta;
+using Finanzas.Models.Dashboard;
 using Finanzas.Models.Operacion;
 using Finanzas.Services;
 using Microsoft.AspNetCore.Components;
@@ -13,6 +14,11 @@ public partial class Movimientos
     [Inject] private OperacionService OperacionApi { get; set; } = default!;
     [Inject] private CuentaService CuentaApi { get; set; } = default!;
     [Inject] private CategoriaService CategoriaApi { get; set; } = default!;
+    [Inject] private DashboardService DashboardApi { get; set; } = default!;
+
+    private DashboardModel? resumen;
+    private string busqueda = "";
+    private string pestana = "todos";
 
     private List<OperacionModel> operaciones = [];
     private List<CuentaModel> cuentas = [];
@@ -41,8 +47,57 @@ public partial class Movimientos
         var rCategorias = await CategoriaApi.GetList();
         cuentas = rCuentas.Data ?? [];
         categorias = rCategorias.Data ?? [];
-        await Recargar();
+        await Task.WhenAll(CargarResumen(), Recargar());
     }
+
+    // Tarjetas de resumen: mismas cifras del dashboard para el mes elegido (no dependen de los demás filtros).
+    private async Task CargarResumen()
+    {
+        var fecha = DateTime.TryParseExact(mes, "yyyy-MM", System.Globalization.CultureInfo.InvariantCulture,
+            System.Globalization.DateTimeStyles.None, out var d) ? d : DateTime.Today;
+        var respuesta = await DashboardApi.Get(fecha.Year, fecha.Month);
+        resumen = respuesta.Success ? respuesta.Data : null;
+    }
+
+    private string NombreMes()
+    {
+        var fecha = DateTime.TryParseExact(mes, "yyyy-MM", System.Globalization.CultureInfo.InvariantCulture,
+            System.Globalization.DateTimeStyles.None, out var d) ? d : DateTime.Today;
+        var cultura = Formato.Mexico;
+        return cultura.TextInfo.ToTitleCase(fecha.ToString("MMMM yyyy", cultura));
+    }
+
+    // Pestañas y búsqueda se aplican sobre los movimientos ya cargados; el resto de filtros van al servidor.
+    private List<OperacionModel> Visibles => operaciones
+        .Where(CoincidePestana)
+        .Where(CoincideBusqueda)
+        .ToList();
+
+    private bool CoincidePestana(OperacionModel o) => pestana switch
+    {
+        "ingresos" => o.TipoOperacion == TipoOperacion.Ingreso,
+        "gastos" => o.TipoOperacion == TipoOperacion.Gasto,
+        "prestamos" => o.TipoOperacion is TipoOperacion.PrestamoOtorgado or TipoOperacion.CobroPrestamo,
+        "deudas" => o.TipoOperacion is TipoOperacion.DeudaAdquirida or TipoOperacion.PagoDeudaPersona,
+        _ => true
+    };
+
+    private bool CoincideBusqueda(OperacionModel o)
+    {
+        var texto = busqueda.Trim();
+        if (texto.Length == 0) return true;
+        return new[] { o.Descripcion, o.CategoriaNombre, o.PersonaNombre, Cuentas(o), NombreTipo(o.TipoOperacion) }
+            .Any(campo => campo != null && campo.Contains(texto, StringComparison.CurrentCultureIgnoreCase));
+    }
+
+    private static string IconoTipo(string t) => t switch
+    {
+        TipoOperacion.Ingreso => "flecha-abajo",
+        TipoOperacion.Gasto => "flecha-arriba",
+        TipoOperacion.Transferencia => "movimientos",
+        TipoOperacion.PagoTarjeta => "cuentas",
+        _ => "personas"
+    };
 
     private OperacionFiltro Filtro(int skip)
     {
@@ -70,7 +125,7 @@ public partial class Movimientos
     private async Task CambiarMes(ChangeEventArgs e)
     {
         mes = e.Value?.ToString() ?? "";
-        await Recargar();
+        await Task.WhenAll(CargarResumen(), Recargar());
     }
 
     private async Task Recargar()
@@ -133,7 +188,7 @@ public partial class Movimientos
     private async Task Guardado()
     {
         formAbierto = false;
-        await Recargar();
+        await Task.WhenAll(CargarResumen(), Recargar());
     }
 
     private void PedirEliminar(OperacionModel operacion)
@@ -155,7 +210,7 @@ public partial class Movimientos
             return;
         }
         aEliminar = null;
-        await Recargar();
+        await Task.WhenAll(CargarResumen(), Recargar());
     }
 
     // Una transferencia muestra origen → destino; el resto, la cuenta afectada.

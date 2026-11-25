@@ -1,0 +1,237 @@
+/* Encabezado */
+.mov-encabezado {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.mov-encabezado h1 {
+    margin: 0;
+}
+
+.mov-encabezado p {
+    margin: 0.1rem 0 0;
+    color: var(--fz-texto-suave);
+}
+
+.mov-encabezado-icono {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.4rem;
+    height: 3.4rem;
+    border-radius: 50%;
+    background: var(--fz-verde-suave);
+    color: var(--fz-enlace);
+    box-shadow: var(--fz-sombra);
+}
+
+/* Tarjetas de resumen */
+.mov-kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(14.5rem, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.mov-kpi {
+    --kpi: var(--fz-verde);
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--fz-borde);
+    border-radius: var(--fz-radio-tarjeta);
+    background: linear-gradient(135deg, var(--fz-superficie) 45%, color-mix(in srgb, var(--kpi) 14%, var(--fz-superficie)));
+    box-shadow: var(--fz-sombra);
+    min-width: 0;
+}
+
+.kpi-ingreso { --kpi: var(--fz-ingreso); }
+.kpi-gasto { --kpi: var(--fz-gasto); }
+.kpi-saldo { --kpi: var(--fz-info); }
+.kpi-credito { --kpi: #4A5A66; }
+
+[data-bs-theme="dark"] .kpi-credito { --kpi: #9FB1AA; }
+
+.mov-kpi-icono {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    background: var(--kpi);
+    color: #fff;
+}
+
+[data-bs-theme="dark"] .kpi-ingreso .mov-kpi-icono,
+[data-bs-theme="dark"] .kpi-gasto .mov-kpi-icono,
+[data-bs-theme="dark"] .kpi-saldo .mov-kpi-icono,
+[data-bs-theme="dark"] .kpi-credito .mov-kpi-icono {
+    color: #141B21;
+}
+
+.mov-kpi-etiqueta {
+    font-size: 0.85rem;
+    color: var(--fz-texto-suave);
+}
+
+.mov-kpi-valor {
+    font-size: 1.45rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--fz-texto);
+    overflow-wrap: anywhere;
+}
+
+.mov-kpi-nota {
+    font-size: 0.8rem;
+    color: var(--fz-texto-suave);
+}
+
+/* Barra de filtros */
+.mov-filtros {
+    margin-bottom: 1rem;
+}
+
+.mov-filtros-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+    gap: 0.75rem;
+    align-items: end;
+}
+
+.mov-buscar {
+    grid-column: 1 / -1;
+}
+
+.mov-agregar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    min-height: 2.75rem;
+    padding-inline: 1.25rem;
+    font-weight: 600;
+}
+
+@media (min-width: 1200px) {
+    .mov-filtros-grid {
+        grid-template-columns: minmax(13rem, 2.2fr) repeat(4, minmax(7.5rem, 1fr)) auto;
+    }
+
+    .mov-buscar {
+        grid-column: auto;
+    }
+}
+
+.mov-filtros .form-select,
+.mov-filtros .form-control {
+    border-radius: 12px;
+}
+
+/* Panel con pestañas, tabla y pie */
+.mov-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.mov-tab {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.45rem;
+    min-height: 2.75rem;
+    padding: 0.4rem 1.1rem;
+    border: 1px solid var(--fz-borde);
+    border-radius: 12px;
+    background: var(--fz-superficie);
+    color: var(--fz-texto);
+    font-weight: 500;
+    transition: background-color 0.15s ease, border-color 0.15s ease;
+}
+
+.mov-tab:hover {
+    border-color: var(--fz-verde);
+}
+
+.mov-tab.activa {
+    border-color: var(--fz-verde);
+    background: var(--fz-verde);
+    color: #fff;
+}
+
+.mov-pie {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.75rem;
+    margin-top: 1rem;
+}
+
+/* Etiquetas de tipo con icono */
+.tipo-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+@media (max-width: 575.98px) {
+    .mov-tab {
+        flex: 1 1 calc(50% - 0.5rem);
+        justify-content: center;
+    }
+
+    .mov-agregar {
+        width: 100%;
+    }
+}
+
+/* Móvil: resumen en dos columnas para no ocupar toda la pantalla */
+@media (max-width: 575.98px) {
+    .mov-encabezado-icono {
+        width: 2.8rem;
+        height: 2.8rem;
+    }
+
+    .mov-encabezado p {
+        font-size: 0.9rem;
+    }
+
+    .mov-kpis {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.6rem;
+    }
+
+    .mov-kpi {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+        padding: 0.8rem;
+    }
+
+    .mov-kpi-icono {
+        width: 2.3rem;
+        height: 2.3rem;
+    }
+
+    .mov-kpi-valor {
+        font-size: 1.15rem;
+    }
+}
+
+@media (max-width: 575.98px) {
+    .mov-filtros-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .mov-filtros-grid > .mov-agregar {
+        grid-column: 1 / -1;
+    }
+}

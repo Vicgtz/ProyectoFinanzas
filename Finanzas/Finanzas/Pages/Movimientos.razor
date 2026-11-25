@@ -4,9 +4,47 @@
 
 <PageTitle>Movimientos - Finexa</PageTitle>
 
-<div class="page-header">
-    <h1>Movimientos</h1>
-    <button class="btn btn-primary" @onclick="Nuevo">+ Movimiento</button>
+<div class="mov-encabezado">
+    <span class="mov-encabezado-icono" aria-hidden="true"><IconoNav Nombre="analisis" Tamano="28" /></span>
+    <div>
+        <h1>Movimientos</h1>
+        <p>Consulta y administra tus movimientos financieros</p>
+    </div>
+</div>
+
+<div class="mov-kpis">
+    <div class="mov-kpi kpi-ingreso">
+        <span class="mov-kpi-icono"><IconoNav Nombre="flecha-abajo" Tamano="24" /></span>
+        <div>
+            <div class="mov-kpi-etiqueta">Ingresos del mes</div>
+            <div class="mov-kpi-valor">@(resumen == null ? "—" : Moneda(resumen.Ingresos))</div>
+            <div class="mov-kpi-nota">@NombreMes()</div>
+        </div>
+    </div>
+    <div class="mov-kpi kpi-gasto">
+        <span class="mov-kpi-icono"><IconoNav Nombre="flecha-arriba" Tamano="24" /></span>
+        <div>
+            <div class="mov-kpi-etiqueta">Gastos del mes</div>
+            <div class="mov-kpi-valor">@(resumen == null ? "—" : Moneda(resumen.Gastos))</div>
+            <div class="mov-kpi-nota">@NombreMes()</div>
+        </div>
+    </div>
+    <div class="mov-kpi kpi-saldo">
+        <span class="mov-kpi-icono"><IconoNav Nombre="cuentas" Tamano="24" /></span>
+        <div>
+            <div class="mov-kpi-etiqueta">Saldo actual</div>
+            <div class="mov-kpi-valor">@(resumen == null ? "—" : Moneda(resumen.DineroPropio))</div>
+            <div class="mov-kpi-nota">Efectivo y débito</div>
+        </div>
+    </div>
+    <div class="mov-kpi kpi-credito">
+        <span class="mov-kpi-icono"><IconoNav Nombre="presupuestos" Tamano="24" /></span>
+        <div>
+            <div class="mov-kpi-etiqueta">Crédito disponible</div>
+            <div class="mov-kpi-valor">@(resumen == null ? "—" : Moneda(resumen.CreditoDisponible))</div>
+            <div class="mov-kpi-nota">No es dinero propio</div>
+        </div>
+    </div>
 </div>
 
 @if (!string.IsNullOrEmpty(error))
@@ -17,16 +55,19 @@
     </div>
 }
 
-<div class="card mb-3">
+<div class="card mov-filtros">
     <div class="card-body">
-        <div class="row g-2">
-            <div class="col-6 col-md-2">
-                <label class="form-label small mb-1" for="f-mes">Mes</label>
-                <input id="f-mes" type="month" class="form-control form-control-sm" value="@mes" @onchange="CambiarMes" max="@DateTime.Today.ToString("yyyy-MM")" />
+        <div class="mov-filtros-grid">
+            <div class="mov-buscar">
+                <label class="visually-hidden" for="f-buscar">Buscar movimiento</label>
+                <div class="campo-icono">
+                    <IconoNav Nombre="buscar" Tamano="18" />
+                    <input id="f-buscar" type="search" class="form-control" placeholder="Buscar movimiento..." @bind="busqueda" @bind:event="oninput" autocomplete="off" />
+                </div>
             </div>
-            <div class="col-6 col-md-2">
+            <div>
                 <label class="form-label small mb-1" for="f-tipo">Tipo</label>
-                <select id="f-tipo" class="form-select form-select-sm" @bind="tipo" @bind:after="Recargar">
+                <select id="f-tipo" class="form-select" @bind="tipo" @bind:after="Recargar">
                     <option value="">Todos</option>
                     <option value="@TipoOperacion.Gasto">Gasto</option>
                     <option value="@TipoOperacion.Ingreso">Ingreso</option>
@@ -38,9 +79,9 @@
                     <option value="@TipoOperacion.PagoDeudaPersona">Pago de deuda</option>
                 </select>
             </div>
-            <div class="col-6 col-md-3">
+            <div>
                 <label class="form-label small mb-1" for="f-cuenta">Cuenta</label>
-                <select id="f-cuenta" class="form-select form-select-sm" @bind="cuentaId" @bind:after="Recargar">
+                <select id="f-cuenta" class="form-select" @bind="cuentaId" @bind:after="Recargar">
                     <option value="">Todas</option>
                     @foreach (var c in cuentas)
                     {
@@ -48,9 +89,9 @@
                     }
                 </select>
             </div>
-            <div class="col-12 col-md-3">
+            <div>
                 <label class="form-label small mb-1" for="f-cat">Categoría</label>
-                <select id="f-cat" class="form-select form-select-sm" @bind="categoriaId" @bind:after="Recargar">
+                <select id="f-cat" class="form-select" @bind="categoriaId" @bind:after="Recargar">
                     <option value="">Todas</option>
                     @foreach (var c in categorias)
                     {
@@ -58,69 +99,95 @@
                     }
                 </select>
             </div>
+            <div>
+                <label class="form-label small mb-1" for="f-mes">Mes</label>
+                <input id="f-mes" type="month" class="form-control" value="@mes" @onchange="CambiarMes" max="@DateTime.Today.ToString("yyyy-MM")" />
+            </div>
+            <button class="btn btn-primary mov-agregar" @onclick="Nuevo">
+                <IconoNav Nombre="agregar" Tamano="18" /> Agregar
+            </button>
         </div>
     </div>
 </div>
 
-@if (cargando)
-{
-    <div class="text-center py-5">
-        <div class="spinner-border" role="status"><span class="visually-hidden">Cargando...</span></div>
-    </div>
-}
-else if (operaciones.Count == 0)
-{
-    <div class="estado-vacio">No hay movimientos para mostrar.</div>
-}
-else
-{
-    <div class="table-responsive">
-        <table class="table table-hover align-middle bg-white table-cards">
-            <thead>
-                <tr>
-                    <th>Fecha</th>
-                    <th>Descripción</th>
-                    <th>Tipo</th>
-                    <th>Categoría</th>
-                    <th>Cuenta</th>
-                    <th class="text-end">Monto</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var o in operaciones)
-                {
-                    <tr>
-                        <td class="text-nowrap" data-label="Fecha">@o.Fecha.ToString("dd/MM/yyyy")</td>
-                        <td class="fw-semibold">@(string.IsNullOrWhiteSpace(o.Descripcion) ? "—" : o.Descripcion)@if (o.Msi != null) {<span class="badge bg-info text-dark ms-1">@o.Msi.NumeroMeses MSI</span>}@if (o.PersonaNombre != null) {<span class="small text-muted fw-normal ms-1">· @o.PersonaNombre</span>}</td>
-                        <td data-label="Tipo"><span class="badge @ClaseTipo(o.TipoOperacion)">@NombreTipo(o.TipoOperacion)</span></td>
-                        <td data-label="Categoría">@(o.CategoriaNombre ?? "—")</td>
-                        <td data-label="Cuenta">@Cuentas(o)</td>
-                        <td class="text-end text-nowrap @ClaseMonto(o.TipoOperacion)" data-label="Monto">@Monto(o)</td>
-                        <td class="text-end text-nowrap acciones">
-                            <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => Copiar(o)" title="Copiar" aria-label="Copiar"><IconoAccion Nombre="copiar" /></button>
-                            <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => Editar(o)" title="Editar" aria-label="Editar"><IconoAccion Nombre="editar" /></button>
-                            <button class="btn btn-sm btn-outline-danger" @onclick="() => PedirEliminar(o)" title="Eliminar" aria-label="Eliminar"><IconoAccion Nombre="eliminar" /></button>
-                        </td>
-                    </tr>
-                }
-            </tbody>
-        </table>
-    </div>
-
-    @if (hayMas)
-    {
-        <div class="text-center my-3">
-            <button class="btn btn-outline-primary" @onclick="CargarMas" disabled="@cargandoMas">
-                @if (cargandoMas)
-                {
-                    <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
-                }
-                Cargar más
-            </button>
+<div class="card mov-panel">
+    <div class="card-body">
+        <div class="mov-tabs" role="group" aria-label="Filtrar por grupo de movimientos">
+            <button type="button" class="mov-tab @(pestana == "todos" ? "activa" : "")" aria-pressed="@(pestana == "todos")" @onclick='() => pestana = "todos"'><IconoNav Nombre="todos" Tamano="18" /> Todos</button>
+            <button type="button" class="mov-tab @(pestana == "ingresos" ? "activa" : "")" aria-pressed="@(pestana == "ingresos")" @onclick='() => pestana = "ingresos"'><IconoNav Nombre="flecha-abajo" Tamano="18" /> Ingresos</button>
+            <button type="button" class="mov-tab @(pestana == "gastos" ? "activa" : "")" aria-pressed="@(pestana == "gastos")" @onclick='() => pestana = "gastos"'><IconoNav Nombre="flecha-arriba" Tamano="18" /> Gastos</button>
+            <button type="button" class="mov-tab @(pestana == "prestamos" ? "activa" : "")" aria-pressed="@(pestana == "prestamos")" @onclick='() => pestana = "prestamos"'><IconoNav Nombre="personas" Tamano="18" /> Préstamos</button>
+            <button type="button" class="mov-tab @(pestana == "deudas" ? "activa" : "")" aria-pressed="@(pestana == "deudas")" @onclick='() => pestana = "deudas"'><IconoNav Nombre="cuentas" Tamano="18" /> Deudas</button>
         </div>
-    }
-}
+
+        @if (cargando)
+        {
+            <div class="text-center py-5">
+                <div class="spinner-border" role="status"><span class="visually-hidden">Cargando...</span></div>
+            </div>
+        }
+        else if (operaciones.Count == 0)
+        {
+            <div class="estado-vacio">No hay movimientos para mostrar.</div>
+        }
+        else if (Visibles.Count == 0)
+        {
+            <div class="estado-vacio">Ningún movimiento coincide con tu búsqueda o con la pestaña elegida.</div>
+        }
+        else
+        {
+            <div class="table-responsive">
+                <table class="table table-hover align-middle bg-white table-cards">
+                    <thead>
+                        <tr>
+                            <th>Fecha</th>
+                            <th>Tipo</th>
+                            <th>Descripción</th>
+                            <th>Categoría</th>
+                            <th>Cuenta</th>
+                            <th class="text-end">Monto</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var o in Visibles)
+                        {
+                            <tr>
+                                <td class="text-nowrap" data-label="Fecha">@o.Fecha.ToString("dd/MM/yyyy")</td>
+                                <td data-label="Tipo"><span class="badge tipo-badge @ClaseTipo(o.TipoOperacion)"><IconoNav Nombre="@IconoTipo(o.TipoOperacion)" Tamano="14" /> @NombreTipo(o.TipoOperacion)</span></td>
+                                <td class="fw-semibold">@(string.IsNullOrWhiteSpace(o.Descripcion) ? "—" : o.Descripcion)@if (o.Msi != null) {<span class="badge bg-info text-dark ms-1">@o.Msi.NumeroMeses MSI</span>}@if (o.PersonaNombre != null) {<span class="small text-muted fw-normal ms-1">· @o.PersonaNombre</span>}</td>
+                                <td data-label="Categoría">@(o.CategoriaNombre ?? "—")</td>
+                                <td data-label="Cuenta">@Cuentas(o)</td>
+                                <td class="text-end text-nowrap @ClaseMonto(o.TipoOperacion)" data-label="Monto">@Monto(o)</td>
+                                <td class="text-end text-nowrap acciones">
+                                    <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => Copiar(o)" title="Copiar" aria-label="Copiar"><IconoAccion Nombre="copiar" /></button>
+                                    <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => Editar(o)" title="Editar" aria-label="Editar"><IconoAccion Nombre="editar" /></button>
+                                    <button class="btn btn-sm btn-outline-danger" @onclick="() => PedirEliminar(o)" title="Eliminar" aria-label="Eliminar"><IconoAccion Nombre="eliminar" /></button>
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="mov-pie">
+                <span class="text-muted small" aria-live="polite">
+                    Mostrando <strong>@Visibles.Count</strong> @(Visibles.Count != operaciones.Count ? $"de {operaciones.Count} movimientos cargados" : (Visibles.Count == 1 ? "movimiento" : "movimientos"))@(hayMas ? " · hay más por cargar" : "")
+                </span>
+                @if (hayMas)
+                {
+                    <button class="btn btn-outline-primary" @onclick="CargarMas" disabled="@cargandoMas">
+                        @if (cargandoMas)
+                        {
+                            <span class="spinner-border spinner-border-sm me-1" aria-hidden="true"></span>
+                        }
+                        Cargar más
+                    </button>
+                }
+            </div>
+        }
+    </div>
+</div>
 
 @if (formAbierto)
 {
