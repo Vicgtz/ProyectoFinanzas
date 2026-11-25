@@ -8,16 +8,24 @@ var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 
+// Secretos del entorno (cadena de conexión con usuario y contraseña, clave JWT). No se sube a git.
+builder.Configuration.AddJsonFile($"appsettings.{builder.Environment.EnvironmentName}.Local.json", optional: true, reloadOnChange: true);
+
+// Si hay ConnectionStrings:Default (producción) se usa tal cual; si no, se arma con DbSettings (local).
 var dbSettings = builder.Configuration.GetSection("GastoApiSettings:DbSettings");
-var connectionString = new SqlConnectionStringBuilder
+var connectionString = builder.Configuration.GetConnectionString("Default");
+if (string.IsNullOrWhiteSpace(connectionString))
 {
-    DataSource = dbSettings["ServerName"],
-    InitialCatalog = dbSettings["DatabaseName"],
-    IntegratedSecurity = dbSettings.GetValue<bool>("UseIntegratedSecurity"),
-    MultipleActiveResultSets = dbSettings.GetValue<bool>("MultipleActiveResultSets"),
-    Encrypt = dbSettings.GetValue<bool>("Encrypt"),
-    TrustServerCertificate = dbSettings.GetValue<bool>("TrustServerCertificate")
-}.ConnectionString;
+    connectionString = new SqlConnectionStringBuilder
+    {
+        DataSource = dbSettings["ServerName"],
+        InitialCatalog = dbSettings["DatabaseName"],
+        IntegratedSecurity = dbSettings.GetValue<bool>("UseIntegratedSecurity"),
+        MultipleActiveResultSets = dbSettings.GetValue<bool>("MultipleActiveResultSets"),
+        Encrypt = dbSettings.GetValue<bool>("Encrypt"),
+        TrustServerCertificate = dbSettings.GetValue<bool>("TrustServerCertificate")
+    }.ConnectionString;
+}
 
 builder.Services.AddDbContextPool<Finanzas.Data.FinanzasDbContext>(options =>
     options.UseSqlServer(connectionString));
