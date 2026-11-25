@@ -1,0 +1,341 @@
+/* Rejilla principal: cuentas y estado arriba; resumen y movimientos recientes abajo */
+.cta-grid {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+}
+
+@media (min-width: 1200px) {
+    .cta-grid {
+        grid-template-columns: minmax(0, 1.75fr) minmax(0, 1fr);
+    }
+}
+
+.cta-titulo {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+    margin-bottom: 1rem;
+}
+
+.cta-titulo .seccion-titulo,
+.cta-estado .seccion-titulo {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-bottom: 0;
+}
+
+.cta-estado .seccion-titulo {
+    margin-bottom: 1rem;
+}
+
+.cta-enlace {
+    font-size: 0.9rem;
+    font-weight: 500;
+}
+
+/* Tarjetas de cuenta */
+.cta-tarjetas {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(16.5rem, 1fr));
+    gap: 1rem;
+}
+
+.cuenta {
+    --tono: var(--fz-verde);
+    display: flex;
+    flex-direction: column;
+    padding: 1rem;
+    border: 1px solid var(--fz-borde);
+    border-radius: var(--fz-radio-tarjeta);
+    background: linear-gradient(150deg, var(--fz-superficie) 40%, color-mix(in srgb, var(--tono) 13%, var(--fz-superficie)));
+    box-shadow: var(--fz-sombra);
+}
+
+.cuenta-efectivo { --tono: var(--fz-ingreso); }
+.cuenta-debito { --tono: var(--fz-info); }
+.cuenta-credito { --tono: var(--fz-cat-5); }
+
+.cuenta.inactiva {
+    opacity: 0.7;
+}
+
+.cuenta-cabeza {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    margin-bottom: 0.9rem;
+}
+
+.cuenta-icono {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.6rem;
+    height: 2.6rem;
+    border-radius: 12px;
+    background: color-mix(in srgb, var(--tono) 18%, var(--fz-superficie));
+    color: var(--tono);
+}
+
+.cuenta-nombre {
+    display: flex;
+    flex-direction: column;
+    min-width: 0;
+}
+
+.cuenta-nombre a {
+    font-weight: 600;
+    font-size: 1.05rem;
+    color: var(--fz-texto);
+    text-decoration: none;
+    overflow-wrap: anywhere;
+}
+
+.cuenta-nombre a:hover {
+    color: var(--fz-enlace);
+}
+
+.cuenta-nombre span {
+    font-size: 0.82rem;
+    color: var(--fz-texto-suave);
+}
+
+.cuenta-etiqueta {
+    font-size: 0.8rem;
+    color: var(--fz-texto-suave);
+}
+
+.cuenta-saldo {
+    font-size: 1.6rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--fz-texto);
+    overflow-wrap: anywhere;
+}
+
+.cuenta-uso {
+    height: 6px;
+    margin-top: 0.6rem;
+}
+
+.cuenta-detalle {
+    margin-top: 0.4rem;
+    font-size: 0.8rem;
+    color: var(--fz-texto-suave);
+}
+
+.cuenta-acciones {
+    display: flex;
+    gap: 0.5rem;
+    margin-top: auto;
+    padding-top: 1rem;
+}
+
+.cuenta-acciones .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    min-height: 2.5rem;
+}
+
+.cuenta-acciones .cuenta-detalle-btn {
+    white-space: nowrap;
+    flex: 1 1 auto;
+}
+
+/* Estado financiero */
+.cta-dona-contenedor {
+    position: relative;
+    width: 11rem;
+    height: 11rem;
+    margin: 0 auto 1rem;
+}
+
+.cta-dona {
+    width: 100%;
+    height: 100%;
+}
+
+.cta-dona-centro {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    padding: 0 2.3rem;
+    line-height: 1.2;
+}
+
+.cta-dona-centro strong {
+    font-size: 1rem;
+    overflow-wrap: anywhere;
+}
+
+.cta-dona-centro span {
+    font-size: 0.75rem;
+    color: var(--fz-texto-suave);
+}
+
+/* Resumen por cuenta */
+.cta-barras {
+    display: flex;
+    align-items: flex-end;
+    gap: 0.75rem;
+    min-height: 15rem;
+    overflow-x: auto;
+    padding-bottom: 0.25rem;
+}
+
+.cta-barra-col {
+    flex: 1 1 0;
+    min-width: 4.5rem;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.35rem;
+}
+
+.cta-barra-valor {
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-align: center;
+}
+
+.cta-barra-caja {
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+    width: 100%;
+    height: 9.5rem;
+    border-bottom: 1px solid var(--fz-borde);
+}
+
+.cta-barra {
+    width: 62%;
+    max-width: 3.2rem;
+    border-radius: 6px 6px 0 0;
+}
+
+.cta-barra.propia { background: var(--fz-verde); }
+.cta-barra.deuda { background: var(--fz-gasto); }
+
+.cta-barra-nombre {
+    font-size: 0.8rem;
+    text-align: center;
+    color: var(--fz-texto-suave);
+    overflow-wrap: anywhere;
+}
+
+.leyenda-horizontal {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
+    margin-top: 0.75rem;
+    font-size: 0.82rem;
+    color: var(--fz-texto-suave);
+}
+
+/* Movimientos recientes */
+.cta-lista {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+}
+
+.cta-lista li {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.65rem 0;
+    border-bottom: 1px solid var(--fz-borde);
+}
+
+.cta-lista li:last-child {
+    border-bottom: 0;
+}
+
+.cta-lista-icono {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.3rem;
+    height: 2.3rem;
+    border-radius: 50%;
+    background: var(--fz-superficie-2);
+    border: 1px solid var(--fz-borde);
+}
+
+.cta-lista-texto {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.cta-lista-texto strong {
+    font-weight: 600;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.cta-lista-texto span {
+    font-size: 0.8rem;
+    color: var(--fz-texto-suave);
+}
+
+.cta-lista-monto {
+    flex: 0 0 auto;
+    font-weight: 600;
+}
+
+/* Leyendas (puntos de color) */
+.punto {
+    display: inline-block;
+    width: 0.7rem;
+    height: 0.7rem;
+    border-radius: 50%;
+    flex: 0 0 auto;
+}
+
+.leyenda {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.leyenda li {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    padding: 0.25rem 0;
+    font-size: 0.9rem;
+}
+
+.leyenda-nombre {
+    flex: 1 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.leyenda-valor {
+    white-space: nowrap;
+    font-weight: 500;
+}
+
+.leyenda-horizontal > span {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}

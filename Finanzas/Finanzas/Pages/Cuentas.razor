@@ -1,12 +1,19 @@
 @page "/cuentas"
 @attribute [Microsoft.AspNetCore.Authorization.Authorize]
 @using Finanzas.Models.Cuenta
+@using Finanzas.Models.Operacion
 
 <PageTitle>Cuentas - Finexa</PageTitle>
 
-<div class="page-header">
-    <h1>Cuentas</h1>
-    <button class="btn btn-primary" @onclick="Nueva">+ Nueva cuenta</button>
+<div class="pagina-encabezado">
+    <span class="pagina-encabezado-icono" aria-hidden="true"><IconoNav Nombre="cuentas" Tamano="28" /></span>
+    <div>
+        <h1>Cuentas</h1>
+        <p>Administra tus cuentas y mantén el control de tu dinero</p>
+    </div>
+    <button class="btn btn-primary pagina-accion" @onclick="Nueva">
+        <IconoNav Nombre="agregar" Tamano="18" /> Agregar cuenta
+    </button>
 </div>
 
 @if (!string.IsNullOrEmpty(error))
@@ -17,28 +24,31 @@
     </div>
 }
 
-<div class="row g-3 mb-3">
-    <div class="col-12 col-md-6">
-        <div class="card h-100">
-            <div class="card-body">
-                <div class="resumen-etiqueta">Dinero disponible (efectivo y débito)</div>
-                <div class="resumen-valor text-success">@Moneda(TotalDisponible)</div>
-            </div>
+<div class="kpis kpis-3">
+    <div class="kpi kpi-ingreso">
+        <span class="kpi-icono"><IconoNav Nombre="cuentas" Tamano="24" /></span>
+        <div>
+            <div class="kpi-etiqueta">Dinero disponible</div>
+            <div class="kpi-valor">@Moneda(TotalDisponible)</div>
+            <div class="kpi-nota">Efectivo y débito</div>
         </div>
     </div>
-    <div class="col-12 col-md-6">
-        <div class="card h-100">
-            <div class="card-body">
-                <div class="resumen-etiqueta">Deuda en tarjetas de crédito</div>
-                <div class="resumen-valor text-danger">@Moneda(TotalDeuda)</div>
-            </div>
+    <div class="kpi kpi-saldo">
+        <span class="kpi-icono"><IconoNav Nombre="tarjeta" Tamano="24" /></span>
+        <div>
+            <div class="kpi-etiqueta">Crédito disponible</div>
+            <div class="kpi-valor">@Moneda(CreditoDisponible)</div>
+            <div class="kpi-nota">No es dinero propio</div>
         </div>
     </div>
-</div>
-
-<div class="form-check form-switch mb-3">
-    <input class="form-check-input" type="checkbox" id="inactivas" @bind="mostrarInactivas" />
-    <label class="form-check-label" for="inactivas">Mostrar cuentas inactivas</label>
+    <div class="kpi kpi-gasto">
+        <span class="kpi-icono"><IconoNav Nombre="flecha-arriba" Tamano="24" /></span>
+        <div>
+            <div class="kpi-etiqueta">Deuda en tarjetas</div>
+            <div class="kpi-valor">@Moneda(TotalDeuda)</div>
+            <div class="kpi-nota">Crédito utilizado</div>
+        </div>
+    </div>
 </div>
 
 @if (cargando)
@@ -47,56 +57,163 @@
         <div class="spinner-border" role="status"><span class="visually-hidden">Cargando...</span></div>
     </div>
 }
-else if (CuentasVisibles.Count == 0)
-{
-    <div class="estado-vacio">
-        No hay cuentas para mostrar.
-    </div>
-}
 else
 {
-    <div class="table-responsive">
-        <table class="table table-hover align-middle bg-white table-cards">
-            <thead>
-                <tr>
-                    <th>Nombre</th>
-                    <th>Tipo</th>
-                    <th class="text-end">Saldo / Deuda</th>
-                    <th class="text-end">Disponible</th>
-                    <th class="text-center">Día de corte</th>
-                    <th>Estado</th>
-                    <th></th>
-                </tr>
-            </thead>
-            <tbody>
-                @foreach (var c in CuentasVisibles)
+    <div class="cta-grid">
+        <section class="card cta-cuentas">
+            <div class="card-body">
+                <div class="cta-titulo">
+                    <h2 class="seccion-titulo mb-0"><IconoNav Nombre="tarjeta" Tamano="20" /> Mis cuentas</h2>
+                    <div class="form-check form-switch mb-0">
+                        <input class="form-check-input" type="checkbox" id="inactivas" @bind="mostrarInactivas" />
+                        <label class="form-check-label small" for="inactivas">Mostrar inactivas</label>
+                    </div>
+                </div>
+
+                @if (CuentasVisibles.Count == 0)
                 {
-                    <tr class="@(c.Activa ? null : "text-muted")">
-                        <td class="fw-semibold"><a href="cuentas/@c.Id" class="text-decoration-none">@c.Nombre</a></td>
-                        <td data-label="Tipo">@NombreTipo(c.TipoCuenta)</td>
-                        <td class="text-end" data-label="@(EsCredito(c) ? "Deuda" : "Saldo")">@Moneda(c.Saldo)</td>
-                        @if (EsCredito(c))
-                        {
-                            <td class="text-end" data-label="Disponible">@Moneda((c.LimiteCredito ?? 0) - c.Saldo)</td>
-                            <td class="text-center" data-label="Día de corte">@(c.DiaCorte?.ToString() ?? "—")</td>
-                        }
-                        else
-                        {
-                            <td class="text-end d-none d-lg-table-cell">—</td>
-                            <td class="text-center d-none d-lg-table-cell">—</td>
-                        }
-                        <td data-label="Estado">
-                            <span class="badge @(c.Activa ? "bg-success" : "bg-secondary")">@(c.Activa ? "Activa" : "Inactiva")</span>
-                        </td>
-                        <td class="text-end text-nowrap acciones">
-                            <a class="btn btn-sm btn-outline-primary me-1" href="cuentas/@c.Id" title="Detalle" aria-label="Detalle"><IconoAccion Nombre="detalle" /></a>
-                            <button class="btn btn-sm btn-outline-primary me-1" @onclick="() => Editar(c)" title="Editar" aria-label="Editar"><IconoAccion Nombre="editar" /></button>
-                            <button class="btn btn-sm btn-outline-secondary" @onclick="() => CambiarEstado(c)" title="@(c.Activa ? "Desactivar" : "Activar")" aria-label="@(c.Activa ? "Desactivar" : "Activar")"><IconoAccion Nombre="estado" /></button>
-                        </td>
-                    </tr>
+                    <div class="estado-vacio">No hay cuentas para mostrar.</div>
                 }
-            </tbody>
-        </table>
+                else
+                {
+                    <div class="cta-tarjetas">
+                        @foreach (var c in CuentasVisibles)
+                        {
+                            <article class="cuenta @ClaseCuenta(c) @(c.Activa ? null : "inactiva")">
+                                <div class="cuenta-cabeza">
+                                    <span class="cuenta-icono"><IconoNav Nombre="@IconoCuenta(c)" Tamano="22" /></span>
+                                    <div class="cuenta-nombre">
+                                        <a href="cuentas/@c.Id">@c.Nombre</a>
+                                        <span>@NombreTipo(c.TipoCuenta)@(c.Activa ? "" : " · Inactiva")</span>
+                                    </div>
+                                </div>
+
+                                <div class="cuenta-etiqueta">@(EsCredito(c) ? "Deuda utilizada" : "Saldo")</div>
+                                <div class="cuenta-saldo">@Moneda(c.Saldo)</div>
+
+                                @if (EsCredito(c))
+                                {
+                                    <div class="progress cuenta-uso" role="progressbar" aria-label="Uso del crédito de @c.Nombre" aria-valuenow="@Uso(c)" aria-valuemin="0" aria-valuemax="100">
+                                        <div class="progress-bar @ClaseUso(c)" style="width:@Uso(c)%"></div>
+                                    </div>
+                                    <div class="cuenta-detalle">
+                                        Disponible @Moneda((c.LimiteCredito ?? 0) - c.Saldo) · Límite @Moneda(c.LimiteCredito ?? 0) · Corte @(c.DiaCorte?.ToString() ?? "—")
+                                    </div>
+                                }
+
+                                <div class="cuenta-acciones">
+                                    <a class="btn btn-outline-primary cuenta-detalle-btn" href="cuentas/@c.Id"><IconoAccion Nombre="detalle" /> Ver detalles</a>
+                                    <button class="btn btn-outline-primary" @onclick="() => Editar(c)" title="Editar" aria-label="Editar @c.Nombre"><IconoAccion Nombre="editar" /></button>
+                                    <button class="btn btn-outline-secondary" @onclick="() => CambiarEstado(c)" title="@(c.Activa ? "Desactivar" : "Activar")" aria-label="@(c.Activa ? "Desactivar" : "Activar") @c.Nombre"><IconoAccion Nombre="estado" /></button>
+                                </div>
+                            </article>
+                        }
+                    </div>
+                }
+            </div>
+        </section>
+
+        <section class="card cta-estado">
+            <div class="card-body">
+                <h2 class="seccion-titulo"><IconoNav Nombre="grafica" Tamano="20" /> Estado financiero</h2>
+                @if (Propias.Count == 0)
+                {
+                    <p class="text-muted small mb-0">Aún no hay saldo en efectivo o débito para repartir.</p>
+                }
+                else
+                {
+                    <div class="cta-dona-contenedor">
+                        <svg viewBox="0 0 42 42" class="cta-dona" role="img" aria-label="Distribución del dinero propio por cuenta">
+                            <circle cx="21" cy="21" r="15.9155" fill="none" style="stroke:var(--fz-borde)" stroke-width="6"></circle>
+                            @{ var acumulado = 0m; }
+                            @for (var i = 0; i < Propias.Count; i++)
+                            {
+                                var p = Porcentaje(Propias[i]);
+                                <circle cx="21" cy="21" r="15.9155" fill="none" style="stroke:@Color(i)" stroke-width="6"
+                                        stroke-dasharray="@Num(p) @Num(100 - p)"
+                                        stroke-dashoffset="@Num(25 - acumulado)"></circle>
+                                acumulado += p;
+                            }
+                        </svg>
+                        <div class="cta-dona-centro">
+                            <strong>@Moneda(TotalDisponible)</strong>
+                            <span>Dinero propio</span>
+                        </div>
+                    </div>
+                    <ul class="leyenda">
+                        @for (var i = 0; i < Propias.Count; i++)
+                        {
+                            <li>
+                                <span class="punto" style="background:@Color(i)"></span>
+                                <span class="leyenda-nombre">@Propias[i].Nombre</span>
+                                <span class="leyenda-valor">@Porcentaje(Propias[i]).ToString("0.#")%</span>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+        </section>
+
+        <section class="card cta-resumen">
+            <div class="card-body">
+                <div class="cta-titulo">
+                    <h2 class="seccion-titulo mb-0"><IconoNav Nombre="grafica" Tamano="20" /> Resumen por cuenta</h2>
+                    <a href="movimientos" class="cta-enlace">Ver movimientos →</a>
+                </div>
+                @if (CuentasVisibles.Count == 0)
+                {
+                    <p class="text-muted small mb-0">Sin cuentas para graficar.</p>
+                }
+                else
+                {
+                    <div class="cta-barras">
+                        @foreach (var c in CuentasVisibles)
+                        {
+                            <div class="cta-barra-col">
+                                <div class="cta-barra-valor">@Moneda(c.Saldo)</div>
+                                <div class="cta-barra-caja">
+                                    <div class="cta-barra @(EsCredito(c) ? "deuda" : "propia")" style="height:@Altura(c)%" title="@c.Nombre: @Moneda(c.Saldo)"></div>
+                                </div>
+                                <div class="cta-barra-nombre">@c.Nombre</div>
+                            </div>
+                        }
+                    </div>
+                    <div class="leyenda-horizontal">
+                        <span><span class="punto" style="background:var(--fz-verde)"></span> Saldo (efectivo y débito)</span>
+                        <span><span class="punto" style="background:var(--fz-gasto)"></span> Deuda (tarjetas)</span>
+                    </div>
+                }
+            </div>
+        </section>
+
+        <section class="card cta-recientes">
+            <div class="card-body">
+                <div class="cta-titulo">
+                    <h2 class="seccion-titulo mb-0"><IconoNav Nombre="reloj" Tamano="20" /> Movimientos recientes</h2>
+                    <a href="movimientos" class="cta-enlace">Ver todos →</a>
+                </div>
+                @if (recientes.Count == 0)
+                {
+                    <p class="text-muted small mb-0">Todavía no hay movimientos.</p>
+                }
+                else
+                {
+                    <ul class="cta-lista">
+                        @foreach (var o in recientes)
+                        {
+                            <li>
+                                <span class="cta-lista-icono @ClaseMonto(o.TipoOperacion)"><IconoNav Nombre="@IconoTipo(o.TipoOperacion)" Tamano="18" /></span>
+                                <div class="cta-lista-texto">
+                                    <strong>@TituloReciente(o)</strong>
+                                    <span>@o.Fecha.ToString("dd/MM/yyyy")</span>
+                                </div>
+                                <span class="cta-lista-monto @ClaseMonto(o.TipoOperacion)">@MontoReciente(o)</span>
+                            </li>
+                        }
+                    </ul>
+                }
+            </div>
+        </section>
     </div>
 }
 

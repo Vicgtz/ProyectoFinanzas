@@ -810,3 +810,178 @@ code { color: var(--fz-gasto); }
     border-radius: 999px;
     font-weight: 600;
 }
+
+/* Encabezado de página con icono y tarjetas de resumen (compartidos por Movimientos y Cuentas) */
+.pagina-encabezado {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.pagina-encabezado h1 {
+    margin: 0;
+}
+
+.pagina-encabezado p {
+    margin: 0.1rem 0 0;
+    color: var(--fz-texto-suave);
+}
+
+.pagina-encabezado-icono {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3.4rem;
+    height: 3.4rem;
+    border-radius: 50%;
+    background: var(--fz-verde-suave);
+    color: var(--fz-enlace);
+    box-shadow: var(--fz-sombra);
+}
+
+/* Tarjetas de resumen */
+.kpis {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(14.5rem, 1fr));
+    gap: 1rem;
+    margin-bottom: 1.25rem;
+}
+
+.kpi {
+    --kpi: var(--fz-verde);
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 1rem 1.1rem;
+    border: 1px solid var(--fz-borde);
+    border-radius: var(--fz-radio-tarjeta);
+    background: linear-gradient(135deg, var(--fz-superficie) 45%, color-mix(in srgb, var(--kpi) 14%, var(--fz-superficie)));
+    box-shadow: var(--fz-sombra);
+    min-width: 0;
+}
+
+.kpi-ingreso { --kpi: var(--fz-ingreso); }
+.kpi-gasto { --kpi: var(--fz-gasto); }
+.kpi-saldo { --kpi: var(--fz-info); }
+.kpi-credito { --kpi: #4A5A66; }
+
+[data-bs-theme="dark"] .kpi-credito { --kpi: #9FB1AA; }
+
+.kpi-icono {
+    flex: 0 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 3rem;
+    height: 3rem;
+    border-radius: 50%;
+    background: var(--kpi);
+    color: #fff;
+}
+
+[data-bs-theme="dark"] .kpi-ingreso .kpi-icono,
+[data-bs-theme="dark"] .kpi-gasto .kpi-icono,
+[data-bs-theme="dark"] .kpi-saldo .kpi-icono,
+[data-bs-theme="dark"] .kpi-credito .kpi-icono {
+    color: #141B21;
+}
+
+.kpi-etiqueta {
+    font-size: 0.85rem;
+    color: var(--fz-texto-suave);
+}
+
+.kpi-valor {
+    font-size: 1.45rem;
+    font-weight: 700;
+    line-height: 1.2;
+    color: var(--fz-texto);
+    overflow-wrap: anywhere;
+}
+
+.kpi-nota {
+    font-size: 0.8rem;
+    color: var(--fz-texto-suave);
+}
+
+/* Móvil: resumen en dos columnas para no ocupar toda la pantalla */
+@media (max-width: 575.98px) {
+    .pagina-encabezado-icono {
+        width: 2.8rem;
+        height: 2.8rem;
+    }
+
+    .pagina-encabezado p {
+        font-size: 0.9rem;
+    }
+
+    .kpis {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 0.6rem;
+    }
+
+    .kpi {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 0.5rem;
+        padding: 0.8rem;
+    }
+
+    .kpi-icono {
+        width: 2.3rem;
+        height: 2.3rem;
+    }
+
+    .kpi-valor {
+        font-size: 1.15rem;
+    }
+}
+
+/* Acción principal a la derecha del encabezado y resumen de tres tarjetas */
+.pagina-accion {
+    margin-left: auto;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    font-weight: 600;
+}
+
+@media (max-width: 575.98px) {
+    .pagina-encabezado {
+        flex-wrap: wrap;
+    }
+
+    .pagina-accion {
+        width: 100%;
+        margin-left: 0;
+        justify-content: center;
+    }
+}
+
+.kpis-3 {
+    grid-template-columns: repeat(auto-fit, minmax(14.5rem, 1fr));
+}
+
+@media (max-width: 575.98px) {
+    .kpis-3 {
+        grid-template-columns: minmax(0, 1fr);
+    }
+
+    .kpis-3 .kpi {
+        flex-direction: row;
+        align-items: center;
+    }
+}
+
+.pagina-encabezado > div {
+    flex: 1 1 0;
+    min-width: 0;
+}
+
+@media (max-width: 575.98px) {
+    .pagina-encabezado > div {
+        flex-basis: calc(100% - 4.5rem);
+    }
+}

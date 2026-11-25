@@ -4,45 +4,45 @@
 
 <PageTitle>Movimientos - Finexa</PageTitle>
 
-<div class="mov-encabezado">
-    <span class="mov-encabezado-icono" aria-hidden="true"><IconoNav Nombre="analisis" Tamano="28" /></span>
+<div class="pagina-encabezado">
+    <span class="pagina-encabezado-icono" aria-hidden="true"><IconoNav Nombre="analisis" Tamano="28" /></span>
     <div>
         <h1>Movimientos</h1>
         <p>Consulta y administra tus movimientos financieros</p>
     </div>
 </div>
 
-<div class="mov-kpis">
-    <div class="mov-kpi kpi-ingreso">
-        <span class="mov-kpi-icono"><IconoNav Nombre="flecha-abajo" Tamano="24" /></span>
+<div class="kpis">
+    <div class="kpi kpi-ingreso">
+        <span class="kpi-icono"><IconoNav Nombre="flecha-abajo" Tamano="24" /></span>
         <div>
-            <div class="mov-kpi-etiqueta">Ingresos del mes</div>
-            <div class="mov-kpi-valor">@(resumen == null ? "—" : Moneda(resumen.Ingresos))</div>
-            <div class="mov-kpi-nota">@NombreMes()</div>
+            <div class="kpi-etiqueta">Ingresos del mes</div>
+            <div class="kpi-valor">@(resumen == null ? "—" : Moneda(resumen.Ingresos))</div>
+            <div class="kpi-nota">@NombreMes()</div>
         </div>
     </div>
-    <div class="mov-kpi kpi-gasto">
-        <span class="mov-kpi-icono"><IconoNav Nombre="flecha-arriba" Tamano="24" /></span>
+    <div class="kpi kpi-gasto">
+        <span class="kpi-icono"><IconoNav Nombre="flecha-arriba" Tamano="24" /></span>
         <div>
-            <div class="mov-kpi-etiqueta">Gastos del mes</div>
-            <div class="mov-kpi-valor">@(resumen == null ? "—" : Moneda(resumen.Gastos))</div>
-            <div class="mov-kpi-nota">@NombreMes()</div>
+            <div class="kpi-etiqueta">Gastos del mes</div>
+            <div class="kpi-valor">@(resumen == null ? "—" : Moneda(resumen.Gastos))</div>
+            <div class="kpi-nota">@NombreMes()</div>
         </div>
     </div>
-    <div class="mov-kpi kpi-saldo">
-        <span class="mov-kpi-icono"><IconoNav Nombre="cuentas" Tamano="24" /></span>
+    <div class="kpi kpi-saldo">
+        <span class="kpi-icono"><IconoNav Nombre="cuentas" Tamano="24" /></span>
         <div>
-            <div class="mov-kpi-etiqueta">Saldo actual</div>
-            <div class="mov-kpi-valor">@(resumen == null ? "—" : Moneda(resumen.DineroPropio))</div>
-            <div class="mov-kpi-nota">Efectivo y débito</div>
+            <div class="kpi-etiqueta">Saldo actual</div>
+            <div class="kpi-valor">@(resumen == null ? "—" : Moneda(resumen.DineroPropio))</div>
+            <div class="kpi-nota">Efectivo y débito</div>
         </div>
     </div>
-    <div class="mov-kpi kpi-credito">
-        <span class="mov-kpi-icono"><IconoNav Nombre="presupuestos" Tamano="24" /></span>
+    <div class="kpi kpi-credito">
+        <span class="kpi-icono"><IconoNav Nombre="presupuestos" Tamano="24" /></span>
         <div>
-            <div class="mov-kpi-etiqueta">Crédito disponible</div>
-            <div class="mov-kpi-valor">@(resumen == null ? "—" : Moneda(resumen.CreditoDisponible))</div>
-            <div class="mov-kpi-nota">No es dinero propio</div>
+            <div class="kpi-etiqueta">Crédito disponible</div>
+            <div class="kpi-valor">@(resumen == null ? "—" : Moneda(resumen.CreditoDisponible))</div>
+            <div class="kpi-nota">No es dinero propio</div>
         </div>
     </div>
 </div>

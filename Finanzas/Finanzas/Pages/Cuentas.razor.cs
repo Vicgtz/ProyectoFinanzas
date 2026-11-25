@@ -1,4 +1,5 @@
 using Finanzas.Models.Cuenta;
+using Finanzas.Models.Operacion;
 using Finanzas.Services;
 using Microsoft.AspNetCore.Components;
 
@@ -7,7 +8,9 @@ namespace Finanzas.Pages;
 public partial class Cuentas
 {
     [Inject] private CuentaService CuentaApi { get; set; } = default!;
+    [Inject] private OperacionService OperacionApi { get; set; } = default!;
 
+    private List<OperacionModel> recientes = [];
     private List<CuentaModel> cuentas = [];
     private bool cargando = true;
     private string? error;
@@ -39,13 +42,87 @@ public partial class Cuentas
     {
         cargando = true;
         error = null;
-        var respuesta = await CuentaApi.GetList();
+        var tareaCuentas = CuentaApi.GetList();
+        var tareaRecientes = OperacionApi.GetList(new OperacionFiltro { Take = 5 });
+        await Task.WhenAll(tareaCuentas, tareaRecientes);
+
+        var respuesta = tareaCuentas.Result;
         if (respuesta.Success)
             cuentas = respuesta.Data ?? [];
         else
             error = respuesta.Message;
+
+        // Los movimientos recientes son un complemento: si fallan, la pantalla sigue funcionando.
+        recientes = tareaRecientes.Result.Success ? tareaRecientes.Result.Data ?? [] : [];
         cargando = false;
     }
+
+    private decimal CreditoDisponible =>
+        cuentas.Where(c => c.Activa && EsCredito(c)).Sum(c => (c.LimiteCredito ?? 0) - c.Saldo);
+
+    // Cuentas de dinero propio (efectivo y débito) activas, para la distribución.
+    private List<CuentaModel> Propias => cuentas.Where(c => c.Activa && !EsCredito(c) && c.Saldo > 0).ToList();
+
+    private decimal Porcentaje(CuentaModel c) => TotalDisponible == 0 ? 0 : c.Saldo / TotalDisponible * 100;
+
+    private static string Color(int i) => $"var(--fz-cat-{i % 8 + 1})";
+
+    private static string Num(decimal valor) => valor.ToString("0.###", System.Globalization.CultureInfo.InvariantCulture);
+
+    // Porcentaje de uso del límite (0 a 100) para la barra de una tarjeta.
+    private static string Uso(CuentaModel c) =>
+        c.LimiteCredito is > 0 ? Num(Math.Clamp(c.Saldo / c.LimiteCredito.Value * 100, 0, 100)) : "0";
+
+    private static string ClaseUso(CuentaModel c)
+    {
+        var uso = c.LimiteCredito is > 0 ? c.Saldo / c.LimiteCredito.Value * 100 : 0;
+        return uso > 60 ? "bg-danger" : uso > 30 ? "bg-warning" : "bg-success";
+    }
+
+    private static string IconoCuenta(CuentaModel c) => c.TipoCuenta switch
+    {
+        TipoCuentaItem.Efectivo => "billete",
+        TipoCuentaItem.Debito => "cuentas",
+        _ => "tarjeta"
+    };
+
+    private static string ClaseCuenta(CuentaModel c) => c.TipoCuenta switch
+    {
+        TipoCuentaItem.Efectivo => "cuenta-efectivo",
+        TipoCuentaItem.Debito => "cuenta-debito",
+        _ => "cuenta-credito"
+    };
+
+    // Barras del resumen: efectivo y débito con su saldo, tarjetas con su deuda.
+    private decimal MaximoBarras => Math.Max(1, CuentasVisibles.Select(c => c.Saldo).DefaultIfEmpty(0).Max());
+
+    private string Altura(CuentaModel c) => Num(Math.Max(3, c.Saldo / MaximoBarras * 100));
+
+    private static string IconoTipo(string t) => t switch
+    {
+        TipoOperacion.Ingreso => "flecha-abajo",
+        TipoOperacion.Gasto => "flecha-arriba",
+        TipoOperacion.Transferencia => "movimientos",
+        TipoOperacion.PagoTarjeta => "cuentas",
+        _ => "personas"
+    };
+
+    private static string ClaseMonto(string t) => t switch
+    {
+        TipoOperacion.Ingreso => "text-success",
+        TipoOperacion.Gasto => "text-danger",
+        _ => ""
+    };
+
+    private static string MontoReciente(OperacionModel o) => o.TipoOperacion switch
+    {
+        TipoOperacion.Ingreso or TipoOperacion.DeudaAdquirida or TipoOperacion.CobroPrestamo => $"+{Moneda(o.Monto)}",
+        TipoOperacion.Gasto or TipoOperacion.PrestamoOtorgado or TipoOperacion.PagoDeudaPersona => $"-{Moneda(o.Monto)}",
+        _ => Moneda(o.Monto)
+    };
+
+    private static string TituloReciente(OperacionModel o) =>
+        string.IsNullOrWhiteSpace(o.Descripcion) ? TipoOperacionTexto.Nombre(o.TipoOperacion) : o.Descripcion;
 
     private void Nueva()
     {
